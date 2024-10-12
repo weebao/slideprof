@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useResizeObserver } from "@wojtekmaj/react-hooks";
-import { useFile } from "@/context/FileContext"; // Assuming FileContext provides the uploaded file
+import { useFile } from "@/context/FileContext";
 import { ChevronLeft, ChevronRight, Loader2, Frown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
@@ -89,7 +89,7 @@ export default function Slides() {
     }
   };
 
-  // fFunction to navigate to a specific page
+  // Function to navigate to a specific page
   const navigateToPage = () => {
     const targetPage = parseInt(inputValue, 10);
 
@@ -111,15 +111,11 @@ export default function Slides() {
     carouselApi.on("scroll", () => {
       setPageNumber(carouselApi.selectedScrollSnap() + 1);
     });
-  }, [carouselApi])
+  }, [carouselApi]);
 
   useEffect(() => {
     carouselApi?.scrollTo(pageNumber - 1);
-  }, [pageNumber])
-
-  // Log the pdfUrl to verify it's correct
-  console.log("PDF URL:", pdfUrl);
-  console.log(file);
+  }, [pageNumber]);
 
   return (
     <div className="w-full h-full flex-1 bg-gray-100 p-4">
@@ -142,7 +138,7 @@ export default function Slides() {
                   className="w-full h-full"
                   options={options}
                 >
-                  <Carousel setApi={setCarouselApi}>
+                  <Carousel setApi={setCarouselApi} opts={{ watchDrag: false }}>
                     <CarouselContent>
                       {Array.from(new Array(numPages), (_el, index) => (
                         <CarouselItem key={index}>
