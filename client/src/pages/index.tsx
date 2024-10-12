@@ -9,6 +9,7 @@ const Home: NextPage = () => {
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    
     console.log("File dropped");
   };
 
@@ -29,7 +30,7 @@ const Home: NextPage = () => {
       <div
         className={`mt-10 max-w-lg mx-auto border-4 border-dashed rounded-lg p-12 text-center ${
           isDragging ? "border-primary bg-primary/10" : "border-gray-300"
-        } transition-colors duration-300 ease-in-out`}
+          } transition-colors duration-300 ease-in-out`}
         onDrag={handleDrop}
       >
         {isUploaded ? (
