@@ -8,15 +8,17 @@ interface BoxCoordinates {
 }
 
 interface DragBoxProps {
+  isActive?: boolean;
   children?: React.ReactNode;
 }
 
-export const DragBox: React.FC<DragBoxProps> = ({ children }) => {
+export const DragBox: React.FC<DragBoxProps> = ({ isActive, children }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [box, setBox] = useState<BoxCoordinates | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const startDrawing = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isActive) return;
     if (containerRef.current) {
       const { left, top } = containerRef.current.getBoundingClientRect();
       const startX = e.clientX - left;
@@ -28,7 +30,7 @@ export const DragBox: React.FC<DragBoxProps> = ({ children }) => {
 
   const draw = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!isDrawing || !containerRef.current) return;
+      if (!isDrawing || !containerRef.current || !isActive) return;
 
       const { left, top } = containerRef.current.getBoundingClientRect();
       const endX = e.clientX - left;
@@ -63,7 +65,7 @@ export const DragBox: React.FC<DragBoxProps> = ({ children }) => {
       onMouseUp={stopDrawing}
       onMouseLeave={stopDrawing}
     >
-      <div className="select-none">{children}</div>
+      <div className={isActive ? "select-none" : ""}>{children}</div>
       {box && <div className="absolute border-2 border-primary bg-primary/10 rounded-md" style={boxStyle}></div>}
     </div>
   );

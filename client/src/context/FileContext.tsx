@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode, useContext } from "react";
+import React, { createContext, useState, ReactNode, useContext, useMemo } from "react";
 
 interface FileContextType {
   file: File | null;
@@ -17,9 +17,13 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
   const clearFile = () => setFile(null); // Function to reset the file
 
-  return (<FileContext.Provider value={{ file, addFile, clearFile }}>
-    {children}
-    </FileContext.Provider>);
+  const value = useMemo(() => ({ file, addFile, clearFile }), [file]);
+
+  return (
+    <FileContext.Provider value={value}>
+      {children}
+    </FileContext.Provider>
+  );
 };
 
 export const useFile = (): FileContextType => {

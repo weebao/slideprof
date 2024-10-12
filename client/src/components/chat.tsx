@@ -9,7 +9,7 @@ interface Message {
   timestamp: Date;
 }
 
-const Chat: React.FC = () => {
+export const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -51,14 +51,14 @@ const Chat: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col bg-white">
       <div className="flex-1 overflow-hidden flex flex-col justify-end">
         <div ref={chatContainerRef} className="overflow-y-auto p-4 space-y-4">
           {messages.map((message, index) => (
             <div key={index} className={`flex ${message.isUser ? "justify-end" : "justify-start"} transition-all duration-300 ease-in-out`}>
-              <div className={`max-w-[70%] rounded-lg p-3 ${message.isUser ? "bg-primary text-primary-foreground" : "bg-white text-gray-800"}`}>
+              <div className={`max-w-[70%] rounded-lg p-3 ${message.isUser ? "bg-black text-white" : "bg-white text-gray-800"}`}>
                 <p>{message.text}</p>
-                <p className={`text-xs mt-1 ${message.isUser ? "text-primary-foreground/70" : "text-gray-500"}`}>{formatTime(message.timestamp)}</p>
+                <p className={`text-xs mt-1 ${message.isUser ? "text-white/70" : "text-gray-500"}`}>{formatTime(message.timestamp)}</p>
               </div>
             </div>
           ))}
