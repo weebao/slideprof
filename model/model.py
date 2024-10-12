@@ -1,13 +1,14 @@
 from dotenv import load_dotenv
 import os
-from utils import extract_text_from_pdf
+from utils import extract_image_from_pdf
 from openai import OpenAI
 import base64
-import requests
+import io
 
-def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+def encode_image(pil_image):
+    buffered = io.BytesIO()
+    pil_image.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
 
 load_dotenv()
@@ -59,7 +60,8 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini"):
     return response_content
 
 if __name__ == "__main__":
-    image_path = "./test_input/image.png"
-    base64_image = encode_image(image_path)
+    img = extract_image_from_pdf("./test_input/LinearRegression.pdf", 17, (150, 150, 800, 250))
+    # img.show()
+    base64_image = encode_image(img)
     arr = run_model(client, "Please explain the following concepts", base64_image)
-    print(arr)
+    # print(arr)
