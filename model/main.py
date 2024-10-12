@@ -67,9 +67,9 @@ async def process_pdf(
         
         base64_image = encode_image(img)
         response = run_model(client, query, base64_image)
-        encoded_speech = run_speech_model(client, response)
+        encoded_speech_arrays = run_speech_model(client, response)
         
-        return {"message": response, "audio": encoded_speech}
+        return {"message": response, "audio": encoded_speech_arrays}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF: {str(e)}")

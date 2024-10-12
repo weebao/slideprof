@@ -66,7 +66,7 @@ def encode_image(pil_image):
 #     ]
 # }
 
-message_history = [
+system_prompt = [
     {
         "role": "system",
         "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. If the image is blank, you can ignore the question and say 'I'm sorry, the chosen part is blank."
@@ -174,7 +174,11 @@ message_history = [
     }    
 ]
 
-def run_model(client, input_text, input_img, model="gpt-4o-mini"):
+message_history = system_prompt.copy()
+
+def run_model(client, input_text, input_img, model="gpt-4o-mini", reset = False):
+    if reset:
+        message_history = system_prompt.copy()
     message_history.append({"role": "user", "content": [
             {
             "type": "text",
@@ -208,31 +212,50 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini"):
 
 def clean_input_text(input_text):
     input_data = json.loads(input_text)
-    clean_text = []
+    cleaned_parts = []
+    if input_data.get("type") == "text":
+        for result_item in input_data.get("result", []):
+            explanation = result_item.get("explanation", "")
+            if explanation:
+                cleaned_parts.append({"type": "explanation", "text": explanation})
 
-    for result_item in input_data.get("result", []):
-        explanation = result_item.get("explanation", "")
-        clean_text.append(explanation)
+            for step in result_item.get("steps", []):
+                item_text = step.get("item", "")
+                if item_text:
+                    cleaned_parts.append({"type": "step", "text": "[pause] " + item_text})
 
-        for step in result_item.get("steps", []):
-            item_text = step.get("item", "")
-            clean_text.append("[pause] " + item_text)
+    elif input_data.get("type") == "tree":
+        for result_item in input_data.get("result", []):
+            explanation = result_item.get("explanation", "")
+            if explanation:
+                cleaned_parts.append({"type": "explanation", "text": explanation})
+                
+    print(cleaned_parts)    
+    return cleaned_parts
 
-    return " ".join(clean_text)
+def run_speech_model(client, input_text, output_folder="./temp_output/"):
+    text_segments = clean_input_text(input_text)
 
-def run_speech_model(client, input_text, speech_file_path = "./temp_output/audio.mp3"):
-    input_text = clean_input_text(input_text)
-    response = client.audio.speech.create(
-        model="tts-1-hd",
-        voice="nova",
-        input=input_text,
-    )
+    encoded_audio_array = []
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-    response.stream_to_file(speech_file_path)
-    with open(speech_file_path, "rb") as speech_file:
-        encoded_speech = base64.b64encode(speech_file.read()).decode('utf-8')
-    return encoded_speech
+    for idx, segment in enumerate(text_segments):
+        segment_type = segment["type"]
+        speech_file_path = os.path.join(output_folder, f"audio_{segment_type}_{idx}.mp3")
 
+        response = client.audio.speech.create(
+            model="tts-1-hd",
+            voice="nova",
+            input=segment["text"],
+        )
+
+        response.stream_to_file(speech_file_path)
+        with open(speech_file_path, "rb") as speech_file:
+            encoded_speech = base64.b64encode(speech_file.read()).decode('utf-8')
+            encoded_audio_array.append(encoded_speech)
+
+    return encoded_audio_array
 
 # if __name__ == "__main__":
 #     load_dotenv()
@@ -240,36 +263,131 @@ def run_speech_model(client, input_text, speech_file_path = "./temp_output/audio
 #         api_key=os.getenv("OPENAI_API_KEY")
 #     )
 #     input_text = """{
-#         "type": "text",
-#         "result": [
-#             {
-#             "explanation": "We will solve the equation 4x² - 4 = 0.",
-#             "steps": [
-#                 {
-#                 "item": "Factor the equation: 4(x² - 1) = 0.",
-#                 "coords": [100, 100]
-#                 },
-#                 {
-#                 "item": "Recognize that x² - 1 is a difference of squares: (x - 1)(x + 1) = 0.",
-#                 "coords": [200, 200]
-#                 },
-#                 {
-#                 "item": "Set each factor equal to zero: x - 1 = 0 and x + 1 = 0.",
-#                 "coords": [300, 300]
-#                 },
-#                 {
-#                 "item": "Solve for x: x = 1 and x = -1.",
-#                 "coords": [400, 400]
-#                 },
-#                 {
-#                 "item": "The solutions are x = 1 and x = -1.",
-#                 "coords": [500, 500]
-#                 }
+#   "type": "tree",
+#   "result": [
+#     {
+#       "explanation": "1. Arrays",
+#       "tree": {
+#         "name": "Array",
+#         "children": [
+#           {
+#             "name": "Definition",
+#             "children": [
+#               {
+#                 "name": "A collection of elements identified by index or key.",
+#                 "children": []
+#               }
 #             ]
-#             }
+#           },
+#           {
+#             "name": "Use Cases",
+#             "children": [
+#               {
+#                 "name": "Storing multiple values.",
+#                 "children": []
+#               },
+#               {
+#                 "name": "Easy access via index.",
+#                 "children": []
+#               }
+#             ]
+#           }
 #         ]
+#       }
+#     },
+#     {
+#       "explanation": "2. Linked Lists",
+#       "tree": {
+#         "name": "Linked List",
+#         "children": [
+#           {
+#             "name": "Definition",
+#             "children": [
+#               {
+#                 "name": "A linear collection of nodes.",
+#                 "children": []
+#               }
+#             ]
+#           },
+#           {
+#             "name": "Advantages",
+#             "children": [
+#               {
+#                 "name": "Dynamic size.",
+#                 "children": []
+#               },
+#               {
+#                 "name": "Efficient insertions/deletions.",
+#                 "children": []
+#               }
+#             ]
+#           }
+#         ]
+#       }
+#     },
+#     {
+#       "explanation": "3. Stacks",
+#       "tree": {
+#         "name": "Stack",
+#         "children": [
+#           {
+#             "name": "Definition",
+#             "children": [
+#               {
+#                 "name": "A collection of elements with LIFO order.",
+#                 "children": []
+#               }
+#             ]
+#           },
+#           {
+#             "name": "Operations",
+#             "children": [
+#               {
+#                 "name": "Push: Add an element.",
+#                 "children": []
+#               },
+#               {
+#                 "name": "Pop: Remove the top element.",
+#                 "children": []
+#               }
+#             ]
+#           }
+#         ]
+#       }
+#     },
+#     {
+#       "explanation": "4. Queues",
+#       "tree": {
+#         "name": "Queue",
+#         "children": [
+#           {
+#             "name": "Definition",
+#             "children": [
+#               {
+#                 "name": "A collection of elements with FIFO order.",
+#                 "children": []
+#               }
+#             ]
+#           },
+#           {
+#             "name": "Operations",
+#             "children": [
+#               {
+#                 "name": "Enqueue: Add an element.",
+#                 "children": []
+#               },
+#               {
+#                 "name": "Dequeue: Remove the front element.",
+#                 "children": []
+#               }
+#             ]
+#           }
+#         ]
+#       }
+#     }
+#   ]
 #     }"""
-#     run_speech_model(client, input_text, "./test_input/output.mp3")
+    run_speech_model(client, input_text)
     
     # img = extract_image_from_pdf("./test_input/LinearRegression.pdf", 17, (150, 150, 800, 250))
     # base64_image = encode_image(img)
