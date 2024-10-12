@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware 
 
 load_dotenv()
 

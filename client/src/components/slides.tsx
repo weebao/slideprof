@@ -156,8 +156,6 @@ export default function Slides() {
               </div>
             </DragBox>
             
-            
-
             {/* Navigation Buttons */}
             <div className="relative mt-6 flex justify-center items-center space-x-4">
               <Button onClick={goToPrevPage} disabled={pageNumber <= 1} variant="outline" size="icon" className="rounded-full bg-white shadow-md">
