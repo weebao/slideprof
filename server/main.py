@@ -45,7 +45,8 @@ async def ask_question(request: Request):
     
     response = requests.post(f"{API_URL}/process_pdf/", data={
         "filename": filename,
-        "page_number": page_number,
+        "query": question,
+        "page_number": int(page_number),
         "coordinates": ",".join(map(str, coordinates))
     })
     

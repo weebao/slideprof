@@ -7,7 +7,7 @@ export const ask = async (filename: string, pageNumber: number, question: string
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ question, imageCoords }),
+      body: JSON.stringify({ filename, pageNumber, question, imageCoords }),
     });
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);

@@ -15,7 +15,9 @@ interface ChatProps {
 }
 
 export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    { text: "Hey, SlideProf here! Please select which part you find difficult and I will help you!", isUser: false, timestamp: new Date() },
+  ]);
   const [inputText, setInputText] = useState("");
   const [isDragboxActive, setIsDragboxActive] = useState(false); // Added state for dragbox
   const [isChatOpen, setIsChatOpen] = useState(false); // Control chat box visibility

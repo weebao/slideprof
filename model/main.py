@@ -48,12 +48,13 @@ async def process_pdf(
     page_number: int = Form(...),     
     coordinates: str = Form(...)      
 ):
+    print("processing...")
     try:
         pdf_path = pdf_storage_path / filename
         if not pdf_path.exists():
             raise HTTPException(status_code=404, detail="PDF file not found")
         
-        coordinates_list = [int(x) for x in coordinates.split(",")]
+        coordinates_list = [float(x) for x in coordinates.split(",")]
         
         if len(coordinates_list) != 4:
             raise HTTPException(status_code=400, detail="Invalid coordinates, must be a list of 4 integers: [x, y, x1, y1]")
@@ -72,4 +73,5 @@ async def process_pdf(
         return {"message": response, "audio": encoded_speech_arrays}
     
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF: {str(e)}")
