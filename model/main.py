@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
-from model import run_model, encode_image
+from model import run_model, encode_image, run_speech_model
 from utils import extract_image_from_pdf
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
@@ -67,8 +67,9 @@ async def process_pdf(
         
         base64_image = encode_image(img)
         response = run_model(client, query, base64_image)
+        encoded_speech = run_speech_model(client, response)
         
-        return {"message": response}
+        return {"message": response, "audio": encoded_speech}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF: {str(e)}")
