@@ -7,10 +7,24 @@ const Home: NextPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+  
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    
-    console.log("File dropped");
+    setIsDragging(false); // Reset the dragging state
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      console.log("File dropped", e.dataTransfer.files[0]);
+      setIsUploaded(true);
+      // Process the file here, e.g., upload or display it
+      e.dataTransfer.clearData(); // Clear drag data
+    }
   };
 
   return (
@@ -27,12 +41,12 @@ const Home: NextPage = () => {
       </div>
 
       {/* Drag and drop area */}
-      <div
-        className={`mt-10 max-w-lg mx-auto border-4 border-dashed rounded-lg p-12 text-center ${
+      <div className={`mt-10 max-w-lg mx-auto border-4 border-dashed rounded-lg p-12 text-center ${
           isDragging ? "border-primary bg-primary/10" : "border-gray-300"
-          } transition-colors duration-300 ease-in-out`}
-        onDrag={handleDrop}
-      >
+        } transition-colors duration-300 ease-in-out`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}>
         {isUploaded ? (
           <div className="text-primary flex flex-col items-center">
             <CheckCircle className="w-16 h-16 mb-4" />
