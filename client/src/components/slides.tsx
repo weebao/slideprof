@@ -22,6 +22,7 @@ export default function Slides() {
   const { file } = useFile();
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
+  const [inputValue, setInputValue] = useState("1"); // Input value for page number
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
@@ -47,6 +48,11 @@ export default function Slides() {
     }
   }, [file]);
 
+  // Syn the input value with the current page number whenver the page number changes
+  useEffect(() => {
+    setInputValue(pageNumber.toString());
+  }, [pageNumber]);
+
   if (loading) {
     return <p>Loading PDF...</p>;
   }
@@ -60,6 +66,43 @@ export default function Slides() {
   const goToPrevPage = () => setPageNumber((prev) => (prev > 1 ? prev - 1 : prev));
   const goToNextPage = () => setPageNumber((prev) => (prev < (numPages || 0) ? prev + 1 : prev));
 
+  // Handle input change for page number
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Only allow numbers
+    if (/^\d*$/.test(value)) {
+      setInputValue(value); // Update the input value
+    }
+  };
+
+  // Handle Enter key for slide input nagiagtion
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && inputValue) {
+      navigateToPage();
+    }
+  }
+
+  //Handle losing focus from input (onBlur event)
+  const handleInputBlur = () => {
+    if (inputValue) {
+      navigateToPage();
+    }
+  }
+
+  // fFunction to navigate to a specific page
+  const navigateToPage = () => {
+    const targetPage = parseInt(inputValue, 10);
+
+      // Only navigate if the value is within the valid range
+      if (targetPage >= 1 && targetPage <= (numPages || 1)) {
+        setPageNumber(targetPage); // Nagivate to the target page
+      } else {
+        alert("Invalid page number. Please enter a valid page number.");
+        setInputValue(pageNumber.toString()); // Reset the input
+      }
+  };
+  
   // Handle when no file is uploaded
   if (!file) {
     return (
@@ -73,66 +116,61 @@ export default function Slides() {
   console.log("PDF URL:", pdfUrl);
 
   return (
-    <div className=" min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gray-100 p-4">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full h-full">
         <h1 className="text-2xl font-bold text-center mb-6">Slide Viewer</h1>
 
         {/* PDF Display */}
-        <DragBox>
-          <div ref={setContainerRef} className="w-full h-full">
-            <Document
-              file={file}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={console.error} // Log errors if loading fails
-              className="flex justify-center items-center w-full h-full"
-              options={options}
-            >
-              <Page pageNumber={pageNumber} width={containerWidth ? Math.min(containerWidth, 800) : 800} />
-            </Document>
-          </div>
-        </DragBox>
+        <div ref={setContainerRef} className="w-full h-full">
+          <Document
+            file={file}
+            onLoadSuccess={onDocumentLoadSuccess}
+            onLoadError={console.error} // Log errors if loading fails
+            className="flex justify-center items-center w-full h-full"
+            options={options}
+          >
+            <Page pageNumber={pageNumber} width={containerWidth ? Math.min(containerWidth, 800) : 800} />
+          </Document>
+        </div>
 
         {/* Navigation Buttons */}
-        <div className="relative mt-6">
-          <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-1/2">
-            <Button onClick={goToPrevPage} disabled={pageNumber <= 1} variant="outline" size="icon" className="rounded-full bg-white shadow-md">
-              <ChevronLeft className="h-6 w-6" />
-              <span className="sr-only">Previous slide</span>
-            </Button>
+        <div className="relative mt-6 flex justify-center items-center space-x-4">
+          <Button
+            onClick={goToPrevPage}
+            disabled={pageNumber <= 1}
+            variant="outline"
+            size="icon"
+            className="rounded-full bg-white shadow-md"
+          >
+            <ChevronLeft className="h-6 w-6" />
+            <span className="sr-only">Previous slide</span>
+          </Button>
+
+          {/* Page input and total page display */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleInputKeyDown}
+              onBlur={handleInputBlur}
+              className="w-12 text-center border rounded-md p-1"
+            />
+            <span className="text-gray-600">/ {numPages}</span>
           </div>
-          <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-1/2">
-            <Button
-              onClick={goToNextPage}
-              disabled={pageNumber >= (numPages || 0)}
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-white shadow-md"
-            >
-              <ChevronRight className="h-6 w-6" />
-              <span className="sr-only">Next slide</span>
-            </Button>
-          </div>
+
+          <Button
+            onClick={goToNextPage}
+            disabled={pageNumber >= (numPages || 0)}
+            variant="outline"
+            size="icon"
+            className="rounded-full bg-white shadow-md"
+          >
+            <ChevronRight className="h-6 w-6" />
+            <span className="sr-only">Next slide</span>
+          </Button>
         </div>
 
-        {/* Page number navigation */}
-        <div className="flex justify-center items-center mt-4 space-x-2">
-          {Array.from({ length: numPages || 0 }, (_, i) => (
-            <Button
-              key={i}
-              variant={pageNumber === i + 1 ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPageNumber(i + 1)}
-              className="w-8 h-8 p-0"
-            >
-              {i + 1}
-            </Button>
-          ))}
-        </div>
-
-        {/* Display current page */}
-        <p className="text-center mt-4 text-sm text-gray-600">
-          Page {pageNumber} of {numPages}
-        </p>
       </div>
     </div>
   );
