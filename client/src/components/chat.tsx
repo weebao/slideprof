@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, MessageCircle, Minus } from "lucide-react"; // Added Minus for minimize icon
+import { Send, Mic, MessageCircle, Minus, SquareDashedMousePointer } from "lucide-react"; // Added Minus for minimize icon
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -9,10 +9,17 @@ interface Message {
   timestamp: Date;
 }
 
-export const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+interface ChatProps {
+  toggleFunction: () => void;
+  chatMutation: any;
+}
+
+export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
+  const [messages, setMessages] = useState<Message[]>([
+    { text: "Hey, SlideProf here! Please select which part you find difficult and I will help you!", isUser: false, timestamp: new Date() },
+  ]);
   const [inputText, setInputText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isDragboxActive, setIsDragboxActive] = useState(false); // Added state for dragbox
   const [isChatOpen, setIsChatOpen] = useState(false); // Control chat box visibility
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -29,41 +36,25 @@ export const Chat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Function to handle clicks outside of the chat box
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (chatBoxRef.current && !chatBoxRef.current.contains(event.target as Node)) {
-        setIsChatOpen(false); // Collapse chat box if clicked outside
-      }
-    }
-
-    if (isChatOpen) {
-      document.addEventListener("mousedown", handleClickOutside); // Listen for clicks
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside); // Remove listener
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // Cleanup
-    };
-  }, [isChatOpen]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputText.trim()) {
       const newMessage: Message = { text: inputText, isUser: true, timestamp: new Date() };
       setMessages((prev) => [...prev, newMessage]);
       setInputText("");
-      setIsLoading(true);
 
-      // Simulate bot response after 2 seconds
-      setTimeout(() => {
-        const botMessage: Message = { text: "What's up?", isUser: false, timestamp: new Date() };
-        setMessages((prev) => [...prev, botMessage]);
-        setIsLoading(false);
-      }, 2000);
+      // Simulate server response
+      chatMutation.mutate(inputText);
+
     }
   };
+
+  useEffect(() => {
+    if (chatMutation.isSuccess) {
+      const newMessage: Message = { text: chatMutation.data, isUser: false, timestamp: new Date() };
+      setMessages((prev) => [...prev, newMessage]);
+    }
+  }, [chatMutation.isSuccess, chatMutation.data]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -100,14 +91,14 @@ export const Chat: React.FC = () => {
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((message, index) => (
               <div key={index} className={`flex ${message.isUser ? "justify-end" : "justify-start"} transition-all duration-300 ease-in-out`}>
-                <div className={`max-w-[70%] rounded-lg p-3 ${message.isUser ? "bg-black text-white" : "bg-white text-gray-800 border"}`}>
+                <div className={`max-w-[70%] rounded-lg p-3 ${message.isUser ? "bg-primary text-white" : "bg-gray-200 text-gray-800 border"}`}>
                   <p>{message.text}</p>
                   <p className={`text-xs mt-1 ${message.isUser ? "text-white/70" : "text-gray-500"}`}>{formatTime(message.timestamp)}</p>
                 </div>
               </div>
             ))}
 
-            {isLoading && (
+            {chatMutation.isPending && (
               <div className="flex justify-start">
                 <div className="bg-white text-gray-800 rounded-lg p-3">
                   <div className="flex space-x-1">
@@ -124,9 +115,17 @@ export const Chat: React.FC = () => {
           {/* Message input field */}
           <form onSubmit={handleSubmit} className="p-4 bg-gray-100 border-t">
             <div className="flex space-x-2">
-              <Button type="button" size="icon" variant="outline">
-                <Mic className="h-4 w-4" />
-                <span className="sr-only">Voice input</span>
+              <Button
+                type="button"
+                size="icon"
+                variant={isDragboxActive ? "default" : "outline"}
+                onClick={() => {
+                  setIsDragboxActive(!isDragboxActive);
+                  toggleFunction();
+                }}
+              >
+                <SquareDashedMousePointer className="h-4 w-4" />
+                <span className="sr-only">Activate dragbox</span>
               </Button>
               <Input
                 type="text"
@@ -135,6 +134,10 @@ export const Chat: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value)}
                 className="flex-1"
               />
+              <Button type="button" size="icon" variant="outline">
+                <Mic className="h-4 w-4" />
+                <span className="sr-only">Voice input</span>
+              </Button>
               <Button type="submit" size="icon">
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>

@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { pdfjs, Document, Page } from "react-pdf";
+import { ask } from "@/services/questionApi";
+import { useMutation } from "@tanstack/react-query";
 import { useResizeObserver } from "@wojtekmaj/react-hooks";
 import { useFile } from "@/context/FileContext";
 import { ChevronLeft, ChevronRight, Loader2, Frown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
-import { pdfjs, Document, Page } from "react-pdf";
 import TreeGraph from './tree';
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { DragBox } from "./dragbox";
-
-
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 const resizeObserverOptions = {};
@@ -22,14 +22,22 @@ const options = {
 
 const maxWidth = 800;
 
-export default function Slides() {
-  const { file } = useFile();
+interface SlidesProps {
+  file: File | null;
+  isDragboxActive?: boolean;
+  setSelectedPage: React.Dispatch<React.SetStateAction<number>>;
+  setDragboxCoords: React.Dispatch<React.SetStateAction<number[]>>;
+  setSlideCoords: React.Dispatch<React.SetStateAction<number[]>>;
+}
+
+const Slides: React.FC<SlidesProps> = ({ file, isDragboxActive, setSelectedPage, setDragboxCoords, setSlideCoords }) => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [inputValue, setInputValue] = useState("1"); // Input value for page number
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const slideRef = useRef<HTMLDivElement>(null);
   const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>();
 
@@ -42,21 +50,6 @@ export default function Slides() {
   }, []);
 
   useResizeObserver(containerRef, resizeObserverOptions, onResize);
-
-  // Effect to create an object URL for the uploaded file
-  useEffect(() => {
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-      setLoading(false); // Mark as done loading
-      return () => URL.revokeObjectURL(url);
-    }
-  }, [file]);
-
-  // Syn the input value with the current page number whenver the page number changes
-  useEffect(() => {
-    setInputValue(pageNumber.toString());
-  }, [pageNumber]);
 
   // Callback when the document is successfully loaded
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
@@ -103,6 +96,21 @@ export default function Slides() {
       setInputValue(pageNumber.toString()); // Reset the input
     }
   };
+  
+  // Effect to create an object URL for the uploaded file
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPdfUrl(url);
+      setLoading(false); // Mark as done loading
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [file]);
+
+  // Syn the input value with the current page number whenver the page number changes
+  useEffect(() => {
+    setInputValue(pageNumber.toString());
+  }, [pageNumber]);
 
   useEffect(() => {
     if (!carouselApi) {
@@ -112,12 +120,21 @@ export default function Slides() {
 
     carouselApi.on("scroll", () => {
       setPageNumber(carouselApi.selectedScrollSnap() + 1);
+      setSelectedPage(carouselApi.selectedScrollSnap() + 1);
     });
   }, [carouselApi]);
 
   useEffect(() => {
     carouselApi?.scrollTo(pageNumber - 1);
   }, [pageNumber]);
+
+  useEffect(() => {
+    if (slideRef.current) {
+      const { offsetLeft, offsetTop } = slideRef.current;
+      const { width, height } = slideRef.current.getBoundingClientRect();
+      setSlideCoords([offsetLeft, offsetTop, width, height]);
+    }
+  }, [slideRef.current]);
 
   return (
     <div className="w-full h-full flex-1 bg-gray-100 p-4">
@@ -130,9 +147,8 @@ export default function Slides() {
           </div>
         ) : (
           <div className="w-full h-full">
-            {/* PDF Display */}
-            <DragBox>
-              <div ref={setContainerRef} className="w-full h-full">
+            <DragBox isActive={isDragboxActive} setCoords={setDragboxCoords}>
+              <div ref={setContainerRef}>
                 <Document
                   file={file}
                   onLoadSuccess={onDocumentLoadSuccess}
@@ -145,6 +161,7 @@ export default function Slides() {
                       {Array.from(new Array(numPages), (_el, index) => (
                         <CarouselItem key={index}>
                           <Page
+                            inputRef={index === 0 ? slideRef : null}
                             key={`page_${index + 1}`}
                             pageNumber={index + 1}
                             width={containerWidth ? Math.min(containerWidth, maxWidth) : maxWidth}
@@ -157,11 +174,6 @@ export default function Slides() {
                 </Document>
               </div>
             </DragBox>
-
-            {/* Centered TreeGraph Overlay */}
-            <div className="absolute left-1/2 -translate-x-1/2 top-1/3 -translate-y-1/2">
-              <TreeGraph />
-            </div>
 
             {/* Navigation Buttons */}
             <div className="relative mt-6 flex justify-center items-center space-x-4">
@@ -197,7 +209,7 @@ export default function Slides() {
           </div>
         )
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center">
+        <div className="w-full h-[calc(100dvh-200px)] flex flex-col items-center justify-center">
           <Frown className="w-12 h-12 mb-2" />
           <p className="text-xl text-gray-600">
             No file uploaded. Please upload a PDF file{" "}
@@ -210,4 +222,6 @@ export default function Slides() {
       )}
     </div>
   );
-}
+};
+
+export default Slides;

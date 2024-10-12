@@ -338,11 +338,15 @@ def clean_input_text(input_text):
             if explanation:
                 cleaned_parts.append({"type": "explanation", "text": explanation})
                 
-    print(cleaned_parts)    
+    print("Input audio parts:" + cleaned_parts)    
     return cleaned_parts
 
 def run_speech_model(client, input_text, output_folder="./temp_output/"):
+    print("Start speech model")
     text_segments = clean_input_text(input_text)
+    print("The text we need is:" + text_segments)
+    if text_segments == []:
+        return None
     encoded_audio_array = []
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)

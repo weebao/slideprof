@@ -68,7 +68,6 @@ def extract_image_from_pdf(pdf_path, page_number, ratios):
     y1 = page_rect.height * ratios[3]
     rect = fitz.Rect(x0, y0, x1, y1)
     pix = page.get_pixmap(clip=rect)
-    
     document.close()
     image_data = pix.tobytes("png")
     image = Image.open(io.BytesIO(image_data))
