@@ -1,15 +1,11 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
+import { NextPage } from "next";
 import { useFile } from "@/context/FileContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { pdfjs, Document, Page } from "react-pdf";
+import { Document, Page } from "@react-pdf/renderer";
 
-// Initialize PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
-export default function SlideViewer() {
+const Slides: NextPage = () => {
   const { file } = useFile();
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -43,14 +39,7 @@ export default function SlideViewer() {
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl">
         <h1 className="text-2xl font-bold text-center mb-6">Slide Viewer</h1>
         <div className="relative">
-          <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess} className="flex justify-center">
-            <Page
-              pageNumber={pageNumber}
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-              className="border border-gray-300 rounded-lg shadow-sm"
-            />
-          </Document>
+          // TODO
           <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-1/2">
             <Button onClick={goToPrevPage} disabled={pageNumber <= 1} variant="outline" size="icon" className="rounded-full bg-white shadow-md">
               <ChevronLeft className="h-6 w-6" />

@@ -1,11 +1,16 @@
 import { NextPage } from "next";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { Upload, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useFile } from "@/context/FileContext";
 
 const Home: NextPage = () => {
+  const router = useRouter();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
+  const a = useFile();
+  const addFile = a.addFile
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -21,9 +26,12 @@ const Home: NextPage = () => {
     setIsDragging(false); // Reset the dragging state
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       console.log("File dropped", e.dataTransfer.files[0]);
+      addFile(e.dataTransfer.files[0]);
+
       setIsUploaded(true);
       // Process the file here, e.g., upload or display it
       e.dataTransfer.clearData(); // Clear drag data
+      router.push("/slides");
     }
   };
 
