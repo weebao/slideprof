@@ -326,25 +326,26 @@ def clean_input_text(input_text):
             explanation = result_item.get("explanation", "")
             if explanation:
                 cleaned_parts.append({"type": "explanation", "text": explanation})
-
+                
+                print(cleaned_parts)
             for step in result_item.get("steps", []):
                 item_text = step.get("item", "")
                 if item_text:
                     cleaned_parts.append({"type": "step", "text": "[pause] " + item_text})
+                    # cleaned_parts.append(item_text)
 
     elif input_data.get("type") == "tree":
         for result_item in input_data.get("result", []):
             explanation = result_item.get("explanation", "")
             if explanation:
                 cleaned_parts.append({"type": "explanation", "text": explanation})
+                # cleaned_parts.append(explanation)
                 
-    print("Input audio parts:" + cleaned_parts)    
     return cleaned_parts
 
 def run_speech_model(client, input_text, output_folder="./temp_output/"):
     print("Start speech model")
     text_segments = clean_input_text(input_text)
-    print("The text we need is:" + text_segments)
     if text_segments == []:
         return None
     encoded_audio_array = []

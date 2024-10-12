@@ -65,14 +65,13 @@ async def process_pdf(
         
         print("EXTRACTING")
         img = extract_image_from_pdf(str(pdf_path), page_number, (x, y, x1, y1))
-        img.show()
+        # img.show()
         print("DONE EXTRACTING")
         if img is None:
             raise HTTPException(status_code=400, detail="Could not extract image from PDF")
         
         base64_image = encode_image(img)
         response = run_model(client, query, base64_image)
-        print("\n \n Response:" + response)
         encoded_speech_arrays = run_speech_model(client, response)
         print("End audio processing")
         return {"message": response, "audio": encoded_speech_arrays}
