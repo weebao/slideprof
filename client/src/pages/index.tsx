@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Upload, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFile } from "@/context/FileContext";
+import { DragBox } from "@/components/dragbox";
 
 const Home: NextPage = () => {
   const router = useRouter();
