@@ -69,7 +69,8 @@ def encode_image(pil_image):
 system_prompt = [
     {
         "role": "system",
-        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. If the image is blank, you can ignore the question and say 'I'm sorry, the chosen part is blank."
+        "content": """You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. 
+        """
     },
     {
         "role": "user",
@@ -174,11 +175,118 @@ system_prompt = [
     }    
 ]
 
-message_history = system_prompt.copy()
+message_history = [
+    {
+        "role": "system",
+        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry."
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Solve the system of equations"
+            },
+            # {
+            #     "type": "image_url",
+            #     "image_url": {
+            #         "url": """data:image/png;base64,  """
+            #     }
+            # }
+        ]
+    },
+    {
+        "role": "assistant",
+        "content": """{
+            "type": "text",
+            "result": [
+                {
+                    "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
+                    "steps": [
+                        {
+                            "item": "Solve the first equation for y: y = 5 - x",
+                            "coords": [100, 100]
+                        },
+                        {
+                            "item": "Substitute into the second equation: 2x - (5 - x) = 3",
+                            "coords": [200, 200]
+                        },
+                        {
+                            "item": "Simplify: 3x = 8, so x = 8/3",
+                            "coords": [300, 300]
+                        },
+                        {
+                            "item": "Substitute x into the equation for y: y = 5 - 8/3 = 7/3",
+                            "coords": [400, 400]
+                        },
+                        {
+                            "item": "The solution is: x = 8/3 and y = 7/3",
+                            "coords": [500, 500]
+                        }
+                    ]
+                }
+            ]
+        }"""
+    }, 
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Please explain the following data structure concepts"
+            },
+            # {
+            #     "type": "image_url",
+            #     "image_url": {
+            #         "url": "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+            #     }
+            # }
+        ]
+    }, 
+    {
+        "role": "assistant",
+        "content": """{
+            type: "tree",
+            result: [
+                {
+                    explanation: "This is the first step of the explanation",
+                    tree: {
+                        name: "x = 2",
+                        children: [
+                            {
+                                name: "y = 3",
+                                children: [
+                                    {
+                                        name: "z = 4",
+                                        children: [
+                                            {
+                                                name: "w = 5",
+                                                children: []
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                name: "z = 4",
+                                children: []
+                            },
+                            {
+                                name: "w = 5",
+                                children: []
+                            }
+                        ]
+                    }
+                }
+            ]
+        }"""
+    }    
+]
 
 def run_model(client, input_text, input_img, model="gpt-4o-mini", reset = False):
-    if reset:
-        message_history = system_prompt.copy()
+    print("IN")
+    # if reset:
+    #     message_history = system_prompt.copy()
     message_history.append({"role": "user", "content": [
             {
             "type": "text",
@@ -235,11 +343,10 @@ def clean_input_text(input_text):
 
 def run_speech_model(client, input_text, output_folder="./temp_output/"):
     text_segments = clean_input_text(input_text)
-
     encoded_audio_array = []
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-
+    print("Mid")
     for idx, segment in enumerate(text_segments):
         segment_type = segment["type"]
         speech_file_path = os.path.join(output_folder, f"audio_{segment_type}_{idx}.mp3")
@@ -254,7 +361,7 @@ def run_speech_model(client, input_text, output_folder="./temp_output/"):
         with open(speech_file_path, "rb") as speech_file:
             encoded_speech = base64.b64encode(speech_file.read()).decode('utf-8')
             encoded_audio_array.append(encoded_speech)
-
+    print("End")
     return encoded_audio_array
 
 # if __name__ == "__main__":
