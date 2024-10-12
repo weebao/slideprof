@@ -1,10 +1,13 @@
+import React, { createContext, useContext, useState } from "react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { createContext, useContext, useState } from "react";
-import { Upload, CheckCircle } from "lucide-react";
+import { Upload, CheckCircle, Loader2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { upload } from "@/services/uploadApi";
 import { Button } from "@/components/ui/button";
 import { useFile } from "@/context/FileContext";
 import { DragBox } from "@/components/dragbox";
+import { LatexText } from "@/components/latex";
 
 
 const Home: NextPage = () => {
@@ -13,7 +16,10 @@ const Home: NextPage = () => {
   const [isUploaded, setIsUploaded] = useState(false);
   const a = useFile();
   const addFile = a.addFile
-  
+
+  const uploadMutation = useMutation({
+    mutationFn: upload,
+  });
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -23,6 +29,15 @@ const Home: NextPage = () => {
   const handleDragLeave = () => {
     setIsDragging(false);
   };
+
+  const uploadFile = async (file: File) => {
+    addFile(file);
+    setIsUploaded(true);
+    await uploadMutation.mutate(file);
+    setTimeout(() => {
+      router.push("/slides");
+    }, 100);
+  }
   
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -30,13 +45,7 @@ const Home: NextPage = () => {
   
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       console.log("File dropped", e.dataTransfer.files[0]);
-      addFile(e.dataTransfer.files[0]);
-  
-      setIsUploaded(true);
-      // Delay routing to make sure the file is added to context
-      setTimeout(() => {
-        router.push("/slides");
-      }, 100);
+      uploadFile(e.dataTransfer.files[0]);
       e.dataTransfer.clearData(); // Clear drag data
     }
   };
@@ -61,11 +70,16 @@ const Home: NextPage = () => {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}>
-        {isUploaded ? (
+        {uploadMutation.isPending ? (
+          <div className="text-primary flex flex-col items-center">
+            <Loader2 className="h-16 w-16 animate-spin" />
+            <p className="text-xl font-semibold">Loading up your PDF...</p>
+          </div>
+        ) : isUploaded ? (
           <div className="text-primary flex flex-col items-center">
             <CheckCircle className="w-16 h-16 mb-4" />
             <p className="text-xl font-semibold">Upload Successful!</p>
-            <p className="mt-2">Your lecture slides are being processed.</p>
+            <p className="mt-2">Your lecture slides are being rendered.</p>
           </div>
         ) : (
           <>
@@ -78,12 +92,7 @@ const Home: NextPage = () => {
               id="file-upload"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
-                  setIsUploaded(true);
-                  addFile(e.target.files[0]);
-                  console.log("File selected");
-                  setTimeout(() => {
-                    router.push("/slides");
-                  }, 100);
+                  uploadFile(e.target.files[0]);
                 }
               }}
             />
@@ -96,7 +105,7 @@ const Home: NextPage = () => {
 
       {/* Features section */}
       <div className="mt-20">
-        <h2 className="text-3xl font-extrabold text-gray-900 text-center">Why Students Love SlideProf</h2>
+        <h2 className="text-3xl font-bold text-gray-900 text-center">Why Students Love SlideProf</h2>
         <div className="mt-10 grid gap-10 md:grid-cols-3">
           {[
             { title: "AI-Powered Explanations", description: "Our advanced AI breaks down complex topics from your lecture slides with ease." },

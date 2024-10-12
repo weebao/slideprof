@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 
 interface BoxCoordinates {
   startX: number;
@@ -10,14 +10,15 @@ interface BoxCoordinates {
 interface DragBoxProps {
   isActive?: boolean;
   children?: React.ReactNode;
+  setCoords: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
-export const DragBox: React.FC<DragBoxProps> = ({ isActive, children }) => {
+export const DragBox: React.FC<DragBoxProps> = ({ isActive, children, setCoords }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [box, setBox] = useState<BoxCoordinates | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const startDrawing = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const startDrawing = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isActive) return;
     if (containerRef.current) {
       const { left, top } = containerRef.current.getBoundingClientRect();
@@ -26,26 +27,29 @@ export const DragBox: React.FC<DragBoxProps> = ({ isActive, children }) => {
       setBox({ startX, startY, endX: startX, endY: startY });
       setIsDrawing(true);
     }
-  }, []);
+  };
 
-  const draw = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!isDrawing || !containerRef.current || !isActive) return;
+  const draw = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDrawing || !containerRef.current || !isActive) return;
+    const { left, top } = containerRef.current.getBoundingClientRect();
+    const endX = e.clientX - left;
+    const endY = e.clientY - top;
+    setBox((prevBox) => (prevBox ? { ...prevBox, endX, endY } : null));
+  };
 
-      const { left, top } = containerRef.current.getBoundingClientRect();
-      const endX = e.clientX - left;
-      const endY = e.clientY - top;
-      setBox((prevBox) => (prevBox ? { ...prevBox, endX, endY } : null));
-    },
-    [isDrawing]
-  );
-
-  const stopDrawing = useCallback(() => {
+  const stopDrawing = () => {
     if (box) {
-      console.log("Box coordinates:", box);
+      setCoords([Math.min(box.startX, box.endX), Math.min(box.startY, box.endY), Math.max(box.startX, box.endX), Math.max(box.startY, box.endY)]);
     }
     setIsDrawing(false);
-  }, [box]);
+  };
+
+  useEffect(() => {
+    if (!isActive) {
+      setBox(null);
+      setIsDrawing(false);
+    }
+  }, [isActive]);
 
   const boxStyle = box
     ? {
@@ -59,13 +63,13 @@ export const DragBox: React.FC<DragBoxProps> = ({ isActive, children }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full"
+      className="relative"
       onMouseDown={startDrawing}
       onMouseMove={draw}
       onMouseUp={stopDrawing}
       onMouseLeave={stopDrawing}
     >
-      <div className={isActive ? "select-none" : ""}>{children}</div>
+      <div className={"w-full h-full " + (isActive ? "select-none" : "select-auto")}>{children}</div>
       {box && <div className="absolute border-2 border-primary bg-primary/10 rounded-md" style={boxStyle}></div>}
     </div>
   );
