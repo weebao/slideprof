@@ -57,7 +57,7 @@ export const DragBox: React.FC<DragBoxProps> = ({ children }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-4xl h-fit"
+      className="relative w-full h-full"
       onMouseDown={startDrawing}
       onMouseMove={draw}
       onMouseUp={stopDrawing}

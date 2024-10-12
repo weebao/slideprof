@@ -55,7 +55,7 @@ const Home: NextPage = () => {
       </div>
 
       {/* Drag and drop area */}
-      <div className={`mt-10 max-w-lg mx-auto border-4 border-dashed rounded-lg p-12 text-center ${
+      <div className={`mt-10 max-w-xl mx-auto border-4 border-dashed rounded-lg p-12 text-center ${
           isDragging ? "border-primary bg-primary/10" : "border-gray-300"
         } transition-colors duration-300 ease-in-out`}
         onDragOver={handleDragOver}
@@ -70,7 +70,7 @@ const Home: NextPage = () => {
         ) : (
           <>
             <Upload className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-600">Drag and drop your lecture slides (PDF) here, or</p>
+            <p className="mt-2 text-base text-gray-600">Drag and drop your lecture slides (PDF) here, or</p>
             <input
               type="file"
               accept=".pdf"
@@ -79,12 +79,16 @@ const Home: NextPage = () => {
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   setIsUploaded(true);
+                  addFile(e.target.files[0]);
                   console.log("File selected");
+                  setTimeout(() => {
+                    router.push("/slides");
+                  }, 100);
                 }
               }}
             />
             <Button className="mt-2" variant="outline" asChild>
-              <label htmlFor="file-upload">Select PDF</label>
+              <label htmlFor="file-upload">Select file</label>
             </Button>
           </>
         )}

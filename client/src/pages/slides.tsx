@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import dynamic from "next/dynamic";
-const SlidesComponent = dynamic(() => import("./Sample.jsx"), { ssr: false });
+const SlidesComponent = dynamic(() => import("../components/slides.js"), { ssr: false });
 
 const Slides: NextPage = () => {
   return <SlidesComponent />;
