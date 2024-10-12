@@ -1,6 +1,6 @@
 export const ask = async (question: string, imageCoords: any) => {
   try {
-    const res = await fetch('/api/ask', {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ask`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

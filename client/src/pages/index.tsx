@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Upload, CheckCircle } from "lucide-react";
+import { Upload, CheckCircle, Loader2 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { upload } from "@/services/uploadApi";
 import { Button } from "@/components/ui/button";
@@ -72,14 +72,14 @@ const Home: NextPage = () => {
         onDrop={handleDrop}>
         {uploadMutation.isPending ? (
           <div className="text-primary flex flex-col items-center">
-            <div className="loader2 animate-spin w-16 h-16 mb-4"></div>
+            <Loader2 className="h-16 w-16 animate-spin" />
             <p className="text-xl font-semibold">Loading up your PDF...</p>
           </div>
         ) : isUploaded ? (
           <div className="text-primary flex flex-col items-center">
             <CheckCircle className="w-16 h-16 mb-4" />
             <p className="text-xl font-semibold">Upload Successful!</p>
-            <p className="mt-2">Your lecture slides are being processed.</p>
+            <p className="mt-2">Your lecture slides are being rendered.</p>
           </div>
         ) : (
           <>
@@ -105,7 +105,7 @@ const Home: NextPage = () => {
 
       {/* Features section */}
       <div className="mt-20">
-        <h2 className="text-3xl font-extrabold text-gray-900 text-center">Why Students Love SlideProf</h2>
+        <h2 className="text-3xl font-bold text-gray-900 text-center">Why Students Love SlideProf</h2>
         <div className="mt-10 grid gap-10 md:grid-cols-3">
           {[
             { title: "AI-Powered Explanations", description: "Our advanced AI breaks down complex topics from your lecture slides with ease." },
