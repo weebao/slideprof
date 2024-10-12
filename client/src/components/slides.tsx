@@ -155,6 +155,8 @@ export default function Slides() {
                 </Document>
               </div>
             </DragBox>
+            
+            
 
             {/* Navigation Buttons */}
             <div className="relative mt-6 flex justify-center items-center space-x-4">

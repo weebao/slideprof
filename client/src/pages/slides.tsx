@@ -7,7 +7,6 @@ const Slides: NextPage = () => {
   return (
     <div className="h-[max(100%,calc(100dvh-200px)] flex">
       <SlidesComponent />
-      {/* <Chat /> */}
       <div className="fixed bottom-4 right-4 w-80 h-96 shadow-l">
         <Chat />
       </div>

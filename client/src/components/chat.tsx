@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, MessageCircle, Minus } from "lucide-react"; // Added Minus for minimize icon
+import { Send, Mic, MessageCircle, Minus, SquareDashedMousePointer } from "lucide-react"; // Added Minus for minimize icon
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -125,8 +125,8 @@ export const Chat: React.FC = () => {
           <form onSubmit={handleSubmit} className="p-4 bg-gray-100 border-t">
             <div className="flex space-x-2">
               <Button type="button" size="icon" variant="outline">
-                <Mic className="h-4 w-4" />
-                <span className="sr-only">Voice input</span>
+                <SquareDashedMousePointer className="h-4 w-4" />
+                <span className="sr-only">Activate dragbox</span>
               </Button>
               <Input
                 type="text"
@@ -135,6 +135,10 @@ export const Chat: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value)}
                 className="flex-1"
               />
+              <Button type="button" size="icon" variant="outline">
+                <Mic className="h-4 w-4" />
+                <span className="sr-only">Voice input</span>
+              </Button>
               <Button type="submit" size="icon">
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>

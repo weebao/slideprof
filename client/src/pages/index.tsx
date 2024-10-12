@@ -5,6 +5,7 @@ import { Upload, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFile } from "@/context/FileContext";
 import { DragBox } from "@/components/dragbox";
+import { LatexText } from "@/components/latex";
 
 
 const Home: NextPage = () => {
@@ -93,6 +94,8 @@ const Home: NextPage = () => {
           </>
         )}
       </div>
+
+      <LatexText text={"= \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"} x={1000} y={1000} />
 
       {/* Features section */}
       <div className="mt-20">
