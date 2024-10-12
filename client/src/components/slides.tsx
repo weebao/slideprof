@@ -20,7 +20,7 @@ const options = {
 
 const maxWidth = 800;
 
-export default function Slides() {
+export default function Slides({isDragboxActive}) {
   const { file } = useFile();
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -128,8 +128,8 @@ export default function Slides() {
           </div>
         ) : (
           <div className="w-full h-full">
-            {/* PDF Display */}
-            <DragBox>
+            {isDragboxActive && (
+            <DragBox> 
               <div ref={setContainerRef} className="w-full h-full">
                 <Document
                   file={file}
@@ -155,6 +155,7 @@ export default function Slides() {
                 </Document>
               </div>
             </DragBox>
+            )}
             
             {/* Navigation Buttons */}
             <div className="relative mt-6 flex justify-center items-center space-x-4">
