@@ -8,9 +8,11 @@ import { useFile } from "@/context/FileContext";
 import { ChevronLeft, ChevronRight, Loader2, Frown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
-
+import TreeGraph from './tree';
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { DragBox } from "./dragbox";
+
+
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 const resizeObserverOptions = {};
@@ -169,6 +171,11 @@ const Slides: React.FC<SlidesProps> = ({ isDragboxActive, setDragboxCoords, setS
                 </Document>
               </div>
             </DragBox>
+
+            {/* Centered TreeGraph Overlay */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-1/3 -translate-y-1/2">
+              <TreeGraph />
+            </div>
 
             {/* Navigation Buttons */}
             <div className="relative mt-6 flex justify-center items-center space-x-4">

@@ -13,6 +13,7 @@
     "@wojtekmaj/react-hooks": "^1.21.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "d3": "^7.9.0",
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^11.2.13",
     "get-port": "^7.1.0",
@@ -29,6 +30,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/node": "^18.19.14",
     "@types/react": "18.3.3",
     "@types/three": "^0.161.2",
