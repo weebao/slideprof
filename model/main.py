@@ -43,7 +43,8 @@ async def upload_pdf(file: UploadFile = File(...)):
 
 @app.post("/process_pdf/")
 async def process_pdf(
-    filename: str = Form(...),        
+    filename: str = Form(...),   
+    query: str = Form(...),     
     page_number: int = Form(...),     
     coordinates: str = Form(...)      
 ):
@@ -65,7 +66,7 @@ async def process_pdf(
             raise HTTPException(status_code=400, detail="Could not extract image from PDF")
         
         base64_image = encode_image(img)
-        response = run_model(client, "Please explain the following concepts", base64_image)
+        response = run_model(client, query, base64_image)
         
         return {"message": response}
     

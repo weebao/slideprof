@@ -11,12 +11,6 @@ def encode_image(pil_image):
     pil_image.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
-
-load_dotenv()
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
-
 # {
 #     type: "text",
 #     result: [
@@ -212,7 +206,21 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini"):
         response_content = response_content[:last_bracket_index + 1]
     return response_content
 
+def run_speech_model(client, input_text, model=""):
+    response = client.audio.speech.create(
+        model="tts-1-hd",
+        voice="nova",
+        input="input_text",
+    )
+
+    response.stream_to_file(speech_file_path)
+
+
 # if __name__ == "__main__":
+    # load_dotenv()
+    # client = OpenAI(
+    #     api_key=os.getenv("OPENAI_API_KEY")
+    # )
     # img = extract_image_from_pdf("./test_input/LinearRegression.pdf", 17, (150, 150, 800, 250))
     # base64_image = encode_image(img)
 
