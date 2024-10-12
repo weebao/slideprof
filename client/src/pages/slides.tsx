@@ -20,7 +20,7 @@ const Slides: NextPage = () => {
         file?.name ?? "lecture7.pdf",
         selectedPage,
         question,
-        dragboxCoords.map((coord, i) => coord - slideCoords[i % 2])
+        dragboxCoords.map((coord, i) => (coord - slideCoords[i % 2]) / slideCoords[i % 2 + 2])
       ),
   });
 

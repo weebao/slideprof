@@ -34,23 +34,35 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.post("/ask")
 async def ask_question(request: Request):
-    data = await request.json()
-    filename = data.get("filename")
-    question = data.get("question")
-    page_number = data.get("pageNumber")
-    coordinates = data.get("imageCoords")
-    
-    if not filename or not question or page_number is None or not coordinates:
-        raise HTTPException(status_code=400, detail="Missing required fields")
-    
-    response = requests.post(f"{API_URL}/process_pdf/", data={
-        "filename": filename,
-        "query": question,
-        "page_number": int(page_number),
-        "coordinates": ",".join(map(str, coordinates))
-    })
-    
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Error processing PDF"))
-    
-    return response.json()
+    try:
+        data = await request.json()
+        filename = data.get("filename")
+        question = data.get("question")
+        page_number = data.get("pageNumber")
+        coordinates = data.get("imageCoords")
+        
+        if not filename or not question or page_number is None or not coordinates:
+            raise HTTPException(status_code=400, detail="Missing required fields")
+        
+        response = requests.post(f"{API_URL}/process_pdf", data={
+            "filename": filename,
+            "query": question,
+            "page_number": int(page_number),
+            "coordinates": ",".join(map(str, coordinates))
+        })
+
+        print({
+            "filename": filename,
+            "query": question,
+            "page_number": int(page_number),
+            "coordinates": ",".join(map(str, coordinates))
+        })
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Error processing PDF"))
+        
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")

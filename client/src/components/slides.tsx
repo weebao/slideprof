@@ -130,8 +130,9 @@ const Slides: React.FC<SlidesProps> = ({ file, isDragboxActive, setSelectedPage,
 
   useEffect(() => {
     if (slideRef.current) {
-      console.log(slideRef.current.offsetLeft || 0, slideRef.current.offsetTop || 0)
-      setSlideCoords([slideRef.current.offsetLeft || 0, slideRef.current.offsetTop || 0]);
+      const { offsetLeft, offsetTop } = slideRef.current;
+      const { width, height } = slideRef.current.getBoundingClientRect();
+      setSlideCoords([offsetLeft, offsetTop, width, height]);
     }
   }, [slideRef.current]);
 

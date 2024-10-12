@@ -29,7 +29,11 @@ pdf_storage_path = Path("./uploaded_pdfs")
 
 pdf_storage_path.mkdir(parents=True, exist_ok=True)
 
-@app.post("/upload_pdf/")
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the PDF to Speech API"}
+
+@app.post("/upload_pdf")
 async def upload_pdf(file: UploadFile = File(...)):
     try:
         file_location = pdf_storage_path / file.filename
@@ -41,19 +45,17 @@ async def upload_pdf(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while uploading the PDF: {str(e)}")
 
-@app.post("/process_pdf/")
+@app.post("/process_pdf")
 async def process_pdf(
     filename: str = Form(...),   
     query: str = Form(...),     
     page_number: int = Form(...),     
     coordinates: str = Form(...)      
 ):
-    print("processing...")
     try:
         pdf_path = pdf_storage_path / filename
         if not pdf_path.exists():
             raise HTTPException(status_code=404, detail="PDF file not found")
-        
         coordinates_list = [float(x) for x in coordinates.split(",")]
         
         if len(coordinates_list) != 4:
@@ -61,17 +63,19 @@ async def process_pdf(
         
         x, y, x1, y1 = coordinates_list
         
+        print("EXTRACTING")
         img = extract_image_from_pdf(str(pdf_path), page_number, (x, y, x1, y1))
-
+        img.show()
+        print("DONE EXTRACTING")
         if img is None:
             raise HTTPException(status_code=400, detail="Could not extract image from PDF")
         
         base64_image = encode_image(img)
         response = run_model(client, query, base64_image)
+        print("\n \n Response:" + response)
         encoded_speech_arrays = run_speech_model(client, response)
-        
+        print("End audio processing")
         return {"message": response, "audio": encoded_speech_arrays}
     
     except Exception as e:
-        print(e)
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF: {str(e)}")
