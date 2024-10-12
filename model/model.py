@@ -75,7 +75,7 @@ client = OpenAI(
 message_history = [
     {
         "role": "system",
-        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry."
+        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. If the image is blank, you can ignore the question and say 'I'm sorry, the chosen part is blank."
     },
     {
         "role": "user",
@@ -130,7 +130,7 @@ message_history = [
         "content": [
             {
                 "type": "text",
-                "text": "Please explain the following concepts"
+                "text": "Please explain the following data structure concepts"
             },
             # {
             #     "type": "image_url",
@@ -212,14 +212,14 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini"):
         response_content = response_content[:last_bracket_index + 1]
     return response_content
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # img = extract_image_from_pdf("./test_input/LinearRegression.pdf", 17, (150, 150, 800, 250))
     # base64_image = encode_image(img)
 
     # Testing with an image
-    img_path = "./test_input/image3.png"
-    with Image.open(img_path) as img:
-        base64_image = encode_image(img)
+    # img_path = "./test_input/image3.png"
+    # with Image.open(img_path) as img:
+    #     base64_image = encode_image(img)
     
-    arr = run_model(client, "Please explain the following concepts", base64_image)
-    print(arr)
+    # arr = run_model(client, "Please explain the following concepts", base64_image)
+    # print(arr)
