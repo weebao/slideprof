@@ -4,6 +4,7 @@ from utils import extract_image_from_pdf
 from openai import OpenAI
 import base64
 import io
+from PIL import Image
 
 def encode_image(pil_image):
     buffered = io.BytesIO()
@@ -16,15 +17,167 @@ client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
+# {
+#     type: "text",
+#     result: [
+#         {
+#             explanation: "This is the first step of the explanation",
+#             steps: [
+#                 {
+#                     item: "x = 2",
+#                     coords: [100, 100]
+#                 },
+#                 {
+#                     item: "y = 3",
+#                     coords: [200, 200]
+#                 }
+#             ]
+#         }
+#     ]
+# }
+
+# {
+#     type: "tree",
+#     result: [
+#         {
+#             explanation: "This is the first step of the explanation",
+#             tree: {
+#                 name: "x = 2",
+#                 children: [
+#                     {
+#                         name: "y = 3",
+#                         children: [
+#                             {
+#                                 name: "z = 4",
+#                                 children: [
+#                                     {
+#                                         name: "w = 5",
+#                                         children: []
+#                                     }
+#                                 ]
+#                             }
+#                         ]
+#                     },
+#                     {
+#                         name: "z = 4",
+#                         children: []
+#                     },
+#                     {
+#                         name: "w = 5",
+#                         children: []
+#                     }
+#                 ]
+#             }
+#         }
+#     ]
+# }
+
 message_history = [
     {
-    "role": "system",
-    "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. For questions unrelated to the content of the slide, do not answer them and only answer about contents of the slide. "
-    } 
-    # {
-    # "role": "system",
-    # "content": "You are an AI assistant skilled in explaining technical concepts and generating LaTeX code. You should explain the requested concepts step by step, returning each step as an item in an array. The array must be normal type of array in Python, begin with [ and end with ]. Each item must be seperated by ,.  Each step must be written in proper LaTeX syntax (not markdown), and the array should contain only these LaTeX steps. Do not generate anything other than the LaTeX steps in the array. You should never give any comment. You should never generate anything after the end of the array."
-    # } 
+        "role": "system",
+        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry."
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Solve the system of equations"
+            },
+            # {
+            #     "type": "image_url",
+            #     "image_url": {
+            #         "url": """data:image/png;base64,  """
+            #     }
+            # }
+        ]
+    },
+    {
+        "role": "assistant",
+        "content": """{
+            "type": "text",
+            "result": [
+                {
+                    "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
+                    "steps": [
+                        {
+                            "item": "Solve the first equation for y: y = 5 - x",
+                            "coords": [100, 100]
+                        },
+                        {
+                            "item": "Substitute into the second equation: 2x - (5 - x) = 3",
+                            "coords": [200, 200]
+                        },
+                        {
+                            "item": "Simplify: 3x = 8, so x = 8/3",
+                            "coords": [300, 300]
+                        },
+                        {
+                            "item": "Substitute x into the equation for y: y = 5 - 8/3 = 7/3",
+                            "coords": [400, 400]
+                        },
+                        {
+                            "item": "The solution is: x = 8/3 and y = 7/3",
+                            "coords": [500, 500]
+                        }
+                    ]
+                }
+            ]
+        }"""
+    }, 
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Please explain the following concepts"
+            },
+            # {
+            #     "type": "image_url",
+            #     "image_url": {
+            #         "url": "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+            #     }
+            # }
+        ]
+    }, 
+    {
+        "role": "assistant",
+        "content": """{
+            type: "tree",
+            result: [
+                {
+                    explanation: "This is the first step of the explanation",
+                    tree: {
+                        name: "x = 2",
+                        children: [
+                            {
+                                name: "y = 3",
+                                children: [
+                                    {
+                                        name: "z = 4",
+                                        children: [
+                                            {
+                                                name: "w = 5",
+                                                children: []
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                name: "z = 4",
+                                children: []
+                            },
+                            {
+                                name: "w = 5",
+                                children: []
+                            }
+                        ]
+                    }
+                }
+            ]
+        }"""
+    }    
 ]
 
 def run_model(client, input_text, input_img, model="gpt-4o-mini"):
@@ -54,14 +207,19 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini"):
             print(chunk.choices[0].delta.content, end="")
     
     message_history.append({"role": "assistant", "content": response_content})
-    last_bracket_index = response_content.rfind(']')
+    last_bracket_index = response_content.rfind('}')
     if last_bracket_index != -1:
         response_content = response_content[:last_bracket_index + 1]
     return response_content
 
 if __name__ == "__main__":
-    img = extract_image_from_pdf("./test_input/LinearRegression.pdf", 17, (150, 150, 800, 250))
-    # img.show()
-    base64_image = encode_image(img)
+    # img = extract_image_from_pdf("./test_input/LinearRegression.pdf", 17, (150, 150, 800, 250))
+    # base64_image = encode_image(img)
+
+    # Testing with an image
+    img_path = "./test_input/image3.png"
+    with Image.open(img_path) as img:
+        base64_image = encode_image(img)
+    
     arr = run_model(client, "Please explain the following concepts", base64_image)
-    # print(arr)
+    print(arr)
