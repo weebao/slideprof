@@ -8,6 +8,9 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between h-16">
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" passHref>
+              <img src="/imgs/logo.png" alt="Website Logo" className="w-12 h-auto mr-3" />
+            </Link> 
+            <Link href="/" passHref>
               <span className="text-2xl font-bold text-primary">SlideProf</span>
             </Link>
           </div>

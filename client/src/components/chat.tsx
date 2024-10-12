@@ -12,7 +12,7 @@ interface Message {
 export const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // For AI thinking state
   const [isChatOpen, setIsChatOpen] = useState(false); // Control chat box visibility
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -87,9 +87,18 @@ export const Chat: React.FC = () => {
         }`}
       >
         <div className="flex flex-col h-full">
-          {/* Chat Box Header with Minimize Button */}
+          {/* Chat Box Header with Logo and Minimize Button */}
           <div className="p-2 bg-gray-200 border-b flex items-center justify-between">
-            <span className="text-gray-700 font-semibold">Chat</span>
+            {/* Display the logo at the top of the chat */}
+            <div className="flex items-center">
+              <img
+                src="/imgs/logo.png" // Your logo file path
+                alt="AI Logo"
+                className={`w-12 h-auto ${isLoading ? "glow" : ""}`} // Add glow when AI is thinking
+              />
+              <span className="ml-2 text-gray-700 font-semibold">SlideProf</span>
+            </div>
+
             <button onClick={() => setIsChatOpen(false)} className="text-gray-500 hover:text-gray-700">
               <Minus className="h-6 w-6" />
               <span className="sr-only">Minimize</span>

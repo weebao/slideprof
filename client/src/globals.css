@@ -6,3 +6,17 @@
     --radius: 0.5rem
   }
 }
+
+/* AI chat 'thinking' state */
+.glow {
+  animation: glow 0.4s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px rgb(0, 135, 34, 1);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(0, 135, 34, 1);
+  }
+}
