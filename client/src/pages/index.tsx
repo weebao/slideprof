@@ -1,7 +1,9 @@
+import React, { createContext, useContext, useState } from "react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { createContext, useContext, useState } from "react";
 import { Upload, CheckCircle } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { upload } from "@/services/uploadApi";
 import { Button } from "@/components/ui/button";
 import { useFile } from "@/context/FileContext";
 import { DragBox } from "@/components/dragbox";
@@ -14,7 +16,10 @@ const Home: NextPage = () => {
   const [isUploaded, setIsUploaded] = useState(false);
   const a = useFile();
   const addFile = a.addFile
-  
+
+  const uploadMutation = useMutation({
+    mutationFn: upload,
+  });
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -24,6 +29,15 @@ const Home: NextPage = () => {
   const handleDragLeave = () => {
     setIsDragging(false);
   };
+
+  const uploadFile = async (file: File) => {
+    addFile(file);
+    setIsUploaded(true);
+    await uploadMutation.mutate(file);
+    setTimeout(() => {
+      router.push("/slides");
+    }, 100);
+  }
   
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -31,13 +45,7 @@ const Home: NextPage = () => {
   
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       console.log("File dropped", e.dataTransfer.files[0]);
-      addFile(e.dataTransfer.files[0]);
-  
-      setIsUploaded(true);
-      // Delay routing to make sure the file is added to context
-      setTimeout(() => {
-        router.push("/slides");
-      }, 100);
+      uploadFile(e.dataTransfer.files[0]);
       e.dataTransfer.clearData(); // Clear drag data
     }
   };
@@ -62,7 +70,12 @@ const Home: NextPage = () => {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}>
-        {isUploaded ? (
+        {uploadMutation.isPending ? (
+          <div className="text-primary flex flex-col items-center">
+            <div className="loader2 animate-spin w-16 h-16 mb-4"></div>
+            <p className="text-xl font-semibold">Loading up your PDF...</p>
+          </div>
+        ) : isUploaded ? (
           <div className="text-primary flex flex-col items-center">
             <CheckCircle className="w-16 h-16 mb-4" />
             <p className="text-xl font-semibold">Upload Successful!</p>
@@ -79,12 +92,7 @@ const Home: NextPage = () => {
               id="file-upload"
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
-                  setIsUploaded(true);
-                  addFile(e.target.files[0]);
-                  console.log("File selected");
-                  setTimeout(() => {
-                    router.push("/slides");
-                  }, 100);
+                  uploadFile(e.target.files[0]);
                 }
               }}
             />
@@ -94,8 +102,6 @@ const Home: NextPage = () => {
           </>
         )}
       </div>
-
-      <LatexText text={"= \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"} x={1000} y={1000} />
 
       {/* Features section */}
       <div className="mt-20">

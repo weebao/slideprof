@@ -9,10 +9,15 @@ interface Message {
   timestamp: Date;
 }
 
-export const Chat: React.FC = () => {
+interface ChatProps {
+  toggleFunction: () => void;
+}
+
+export const Chat: React.FC<ChatProps> = ({ toggleFunction }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDragboxActive, setIsDragboxActive] = useState(false); // Added state for dragbox
   const [isChatOpen, setIsChatOpen] = useState(false); // Control chat box visibility
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -124,7 +129,15 @@ export const Chat: React.FC = () => {
           {/* Message input field */}
           <form onSubmit={handleSubmit} className="p-4 bg-gray-100 border-t">
             <div className="flex space-x-2">
-              <Button type="button" size="icon" variant="outline">
+              <Button
+                type="button"
+                size="icon"
+                variant={isDragboxActive ? "default" : "outline"}
+                onClick={() => {
+                  setIsDragboxActive(!isDragboxActive);
+                  toggleFunction();
+                }}
+              >
                 <SquareDashedMousePointer className="h-4 w-4" />
                 <span className="sr-only">Activate dragbox</span>
               </Button>

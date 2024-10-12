@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { pdfjs, Document, Page } from "react-pdf";
+import { ask } from "@/services/questionApi";
+import { useMutation } from "@tanstack/react-query";
 import { useResizeObserver } from "@wojtekmaj/react-hooks";
 import { useFile } from "@/context/FileContext";
 import { ChevronLeft, ChevronRight, Loader2, Frown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
-import { pdfjs, Document, Page } from "react-pdf";
 
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { DragBox } from "./dragbox";
@@ -20,7 +22,13 @@ const options = {
 
 const maxWidth = 800;
 
-export default function Slides({isDragboxActive}) {
+interface SlidesProps {
+  isDragboxActive?: boolean;
+  setDragboxCoords: React.Dispatch<React.SetStateAction<number[]>>;
+  setSlideDimension: React.Dispatch<React.SetStateAction<number[]>>;
+}
+
+const Slides: React.FC<SlidesProps> = ({ isDragboxActive, setDragboxCoords, setSlideDimension }) => {
   const { file } = useFile();
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -40,21 +48,6 @@ export default function Slides({isDragboxActive}) {
   }, []);
 
   useResizeObserver(containerRef, resizeObserverOptions, onResize);
-
-  // Effect to create an object URL for the uploaded file
-  useEffect(() => {
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-      setLoading(false); // Mark as done loading
-      return () => URL.revokeObjectURL(url);
-    }
-  }, [file]);
-
-  // Syn the input value with the current page number whenver the page number changes
-  useEffect(() => {
-    setInputValue(pageNumber.toString());
-  }, [pageNumber]);
 
   // Callback when the document is successfully loaded
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
@@ -101,6 +94,21 @@ export default function Slides({isDragboxActive}) {
       setInputValue(pageNumber.toString()); // Reset the input
     }
   };
+  
+  // Effect to create an object URL for the uploaded file
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPdfUrl(url);
+      setLoading(false); // Mark as done loading
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [file]);
+
+  // Syn the input value with the current page number whenver the page number changes
+  useEffect(() => {
+    setInputValue(pageNumber.toString());
+  }, [pageNumber]);
 
   useEffect(() => {
     if (!carouselApi) {
@@ -112,6 +120,13 @@ export default function Slides({isDragboxActive}) {
       setPageNumber(carouselApi.selectedScrollSnap() + 1);
     });
   }, [carouselApi]);
+
+  useEffect(() => {
+    if (containerRef) {
+      const { width, height } = containerRef.getBoundingClientRect();
+      setSlideDimension([width, height]);
+    }
+  }, [containerRef, containerWidth]);
 
   useEffect(() => {
     carouselApi?.scrollTo(pageNumber - 1);
@@ -128,8 +143,7 @@ export default function Slides({isDragboxActive}) {
           </div>
         ) : (
           <div className="w-full h-full">
-            {isDragboxActive && (
-            <DragBox> 
+            <DragBox isActive={isDragboxActive} setCoords={setDragboxCoords}>
               <div ref={setContainerRef} className="w-full h-full">
                 <Document
                   file={file}
@@ -155,8 +169,7 @@ export default function Slides({isDragboxActive}) {
                 </Document>
               </div>
             </DragBox>
-            )}
-            
+
             {/* Navigation Buttons */}
             <div className="relative mt-6 flex justify-center items-center space-x-4">
               <Button onClick={goToPrevPage} disabled={pageNumber <= 1} variant="outline" size="icon" className="rounded-full bg-white shadow-md">
@@ -191,7 +204,7 @@ export default function Slides({isDragboxActive}) {
           </div>
         )
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center">
+        <div className="w-full h-[calc(100dvh-200px)] flex flex-col items-center justify-center">
           <Frown className="w-12 h-12 mb-2" />
           <p className="text-xl text-gray-600">
             No file uploaded. Please upload a PDF file{" "}
@@ -204,4 +217,6 @@ export default function Slides({isDragboxActive}) {
       )}
     </div>
   );
-}
+};
+
+export default Slides;
