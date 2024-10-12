@@ -7,20 +7,8 @@ const Home: NextPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragging(false);
-    setIsUploaded(true);
-    // Here you would typically handle the file upload
     console.log("File dropped");
   };
 
@@ -42,9 +30,7 @@ const Home: NextPage = () => {
         className={`mt-10 max-w-lg mx-auto border-4 border-dashed rounded-lg p-12 text-center ${
           isDragging ? "border-primary bg-primary/10" : "border-gray-300"
         } transition-colors duration-300 ease-in-out`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        onDrag={handleDrop}
       >
         {isUploaded ? (
           <div className="text-primary flex flex-col items-center">
@@ -56,8 +42,20 @@ const Home: NextPage = () => {
           <>
             <Upload className="mx-auto h-12 w-12 text-gray-400" />
             <p className="mt-2 text-sm text-gray-600">Drag and drop your lecture slides (PDF) here, or</p>
-            <Button className="mt-2" variant="outline">
-              Select PDF
+            <input
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              id="file-upload"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  setIsUploaded(true);
+                  console.log("File selected");
+                }
+              }}
+            />
+            <Button className="mt-2" variant="outline" asChild>
+              <label htmlFor="file-upload">Select PDF</label>
             </Button>
           </>
         )}
@@ -86,7 +84,7 @@ const Home: NextPage = () => {
       {/* Testimonial section */}
       <div className="mt-20 bg-primary text-white rounded-lg p-8">
         <blockquote className="italic text-center text-lg">
-          "SlideProf helped me understand complex topics in my biochemistry lecture slides that I was struggling with. The AI's explanations and
+          "SlideProf helped me visualize quantum multi-variable Count-Min Sketch BST CSS SPX works. The AI's explanations and
           drawings made everything click just before my final exam!"
         </blockquote>
         <p className="mt-4 text-center font-semibold">- Bao Dang, not the brightest student</p>
