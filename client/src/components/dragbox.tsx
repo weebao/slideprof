@@ -39,7 +39,7 @@ export const DragBox: React.FC<DragBoxProps> = ({ isActive, children, setCoords 
 
   const stopDrawing = () => {
     if (box) {
-      setCoords([Math.min(box.startX, box.endX), Math.min(box.startY, box.endY), Math.abs(box.endX - box.startX), Math.abs(box.endY - box.startY)]);
+      setCoords([Math.min(box.startX, box.endX), Math.min(box.startY, box.endY), Math.max(box.startX, box.endX), Math.max(box.startY, box.endY)]);
     }
     setIsDrawing(false);
   };
@@ -63,13 +63,13 @@ export const DragBox: React.FC<DragBoxProps> = ({ isActive, children, setCoords 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full"
+      className="relative"
       onMouseDown={startDrawing}
       onMouseMove={draw}
       onMouseUp={stopDrawing}
       onMouseLeave={stopDrawing}
     >
-      <div className={isActive ? "select-none" : ""}>{children}</div>
+      <div className={"w-full h-full " + (isActive ? "select-none" : "select-auto")}>{children}</div>
       {box && <div className="absolute border-2 border-primary bg-primary/10 rounded-md" style={boxStyle}></div>}
     </div>
   );

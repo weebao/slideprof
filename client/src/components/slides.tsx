@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { pdfjs, Document, Page } from "react-pdf";
 import { ask } from "@/services/questionApi";
@@ -23,19 +23,21 @@ const options = {
 const maxWidth = 800;
 
 interface SlidesProps {
+  file: File | null;
   isDragboxActive?: boolean;
+  setSelectedPage: React.Dispatch<React.SetStateAction<number>>;
   setDragboxCoords: React.Dispatch<React.SetStateAction<number[]>>;
-  setSlideDimension: React.Dispatch<React.SetStateAction<number[]>>;
+  setSlideCoords: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
-const Slides: React.FC<SlidesProps> = ({ isDragboxActive, setDragboxCoords, setSlideDimension }) => {
-  const { file } = useFile();
+const Slides: React.FC<SlidesProps> = ({ file, isDragboxActive, setSelectedPage, setDragboxCoords, setSlideCoords }) => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [inputValue, setInputValue] = useState("1"); // Input value for page number
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const slideRef = useRef<HTMLDivElement>(null);
   const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>();
 
@@ -118,19 +120,20 @@ const Slides: React.FC<SlidesProps> = ({ isDragboxActive, setDragboxCoords, setS
 
     carouselApi.on("scroll", () => {
       setPageNumber(carouselApi.selectedScrollSnap() + 1);
+      setSelectedPage(carouselApi.selectedScrollSnap() + 1);
     });
   }, [carouselApi]);
 
   useEffect(() => {
-    if (containerRef) {
-      const { width, height } = containerRef.getBoundingClientRect();
-      setSlideDimension([width, height]);
-    }
-  }, [containerRef, containerWidth]);
-
-  useEffect(() => {
     carouselApi?.scrollTo(pageNumber - 1);
   }, [pageNumber]);
+
+  useEffect(() => {
+    if (slideRef.current) {
+      console.log(slideRef.current.offsetLeft || 0, slideRef.current.offsetTop || 0)
+      setSlideCoords([slideRef.current.offsetLeft || 0, slideRef.current.offsetTop || 0]);
+    }
+  }, [slideRef.current]);
 
   return (
     <div className="w-full h-full flex-1 bg-gray-100 p-4">
@@ -144,7 +147,7 @@ const Slides: React.FC<SlidesProps> = ({ isDragboxActive, setDragboxCoords, setS
         ) : (
           <div className="w-full h-full">
             <DragBox isActive={isDragboxActive} setCoords={setDragboxCoords}>
-              <div ref={setContainerRef} className="w-full h-full">
+              <div ref={setContainerRef}>
                 <Document
                   file={file}
                   onLoadSuccess={onDocumentLoadSuccess}
@@ -157,6 +160,7 @@ const Slides: React.FC<SlidesProps> = ({ isDragboxActive, setDragboxCoords, setS
                       {Array.from(new Array(numPages), (_el, index) => (
                         <CarouselItem key={index}>
                           <Page
+                            inputRef={index === 0 ? slideRef : null}
                             key={`page_${index + 1}`}
                             pageNumber={index + 1}
                             width={containerWidth ? Math.min(containerWidth, maxWidth) : maxWidth}

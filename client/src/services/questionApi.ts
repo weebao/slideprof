@@ -1,5 +1,7 @@
-export const ask = async (question: string, imageCoords: any) => {
+export const ask = async (filename: string, pageNumber: number, question: string, imageCoords: any) => {
   try {
+    console.log(question, imageCoords, filename, pageNumber);
+  
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ask`, {
       method: 'POST',
       headers: {
