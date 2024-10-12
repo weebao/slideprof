@@ -5,17 +5,11 @@ from openai import OpenAI
 import base64
 import io
 from PIL import Image
-
+import json
 def encode_image(pil_image):
     buffered = io.BytesIO()
     pil_image.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode('utf-8')
-
-
-load_dotenv()
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
 
 # {
 #     type: "text",
@@ -212,7 +206,71 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini"):
         response_content = response_content[:last_bracket_index + 1]
     return response_content
 
+def clean_input_text(input_text):
+    input_data = json.loads(input_text)
+    clean_text = []
+
+    for result_item in input_data.get("result", []):
+        explanation = result_item.get("explanation", "")
+        clean_text.append(explanation)
+
+        for step in result_item.get("steps", []):
+            item_text = step.get("item", "")
+            clean_text.append("[pause] " + item_text)
+
+    return " ".join(clean_text)
+
+def run_speech_model(client, input_text, speech_file_path = "./temp_output/audio.mp3"):
+    input_text = clean_input_text(input_text)
+    response = client.audio.speech.create(
+        model="tts-1-hd",
+        voice="nova",
+        input=input_text,
+    )
+
+    response.stream_to_file(speech_file_path)
+    with open(speech_file_path, "rb") as speech_file:
+        encoded_speech = base64.b64encode(speech_file.read()).decode('utf-8')
+    return encoded_speech
+
+
 # if __name__ == "__main__":
+#     load_dotenv()
+#     client = OpenAI(
+#         api_key=os.getenv("OPENAI_API_KEY")
+#     )
+#     input_text = """{
+#         "type": "text",
+#         "result": [
+#             {
+#             "explanation": "We will solve the equation 4x² - 4 = 0.",
+#             "steps": [
+#                 {
+#                 "item": "Factor the equation: 4(x² - 1) = 0.",
+#                 "coords": [100, 100]
+#                 },
+#                 {
+#                 "item": "Recognize that x² - 1 is a difference of squares: (x - 1)(x + 1) = 0.",
+#                 "coords": [200, 200]
+#                 },
+#                 {
+#                 "item": "Set each factor equal to zero: x - 1 = 0 and x + 1 = 0.",
+#                 "coords": [300, 300]
+#                 },
+#                 {
+#                 "item": "Solve for x: x = 1 and x = -1.",
+#                 "coords": [400, 400]
+#                 },
+#                 {
+#                 "item": "The solutions are x = 1 and x = -1.",
+#                 "coords": [500, 500]
+#                 }
+#             ]
+#             }
+#         ]
+#     }"""
+#     run_speech_model(client, input_text, "./test_input/output.mp3")
+    
     # img = extract_image_from_pdf("./test_input/LinearRegression.pdf", 17, (150, 150, 800, 250))
     # base64_image = encode_image(img)
 
