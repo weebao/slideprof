@@ -1,7 +1,7 @@
 import React from 'react';
 
-const BigNextLineArrow: React.FC = () => (
-  <svg width="395" height="327" viewBox="0 0 395 327" fill="none" xmlns="http://www.w3.org/2000/svg">
+export const BigNextLineArrow: React.FC<{ className?: string }> = ({ className }) => (
+  <svg width="395" height="327" viewBox="0 0 395 327" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M13.988 4.17235C-4.97583 30.0526 -1.76567 66.4039 8.69117 94.9752C20.22 126.695 41.0215 154.275 67.3948 175.348C120.575 218.274 189.654 232.259 256.182 236.768C297.595 239.593 339.092 238.286 380.441 233.656C384.284 233.219 386.852 228.044 386.04 224.75C385.054 220.532 380.978 218.715 377.134 219.151C342.142 222.967 307.032 224.124 271.804 222.623C239.639 221.119 207.53 217.881 176.169 210.482C115.441 195.594 56.6911 162.238 28.6675 103.945C15.4663 76.5611 7.51541 38.4224 27.1144 11.8481C29.3656 8.55173 27.6854 3.69819 24.5337 1.70692C20.4281 -0.774787 16.2392 0.876015 13.988 4.17235Z"
       fill="currentColor"
@@ -12,5 +12,3 @@ const BigNextLineArrow: React.FC = () => (
     />
   </svg>
 );
-
-export default BigNextLineArrow;

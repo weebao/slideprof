@@ -73,6 +73,17 @@ async def process_pdf(
         
         base64_image = encode_image(img)
         response = run_model(client, query + f". COORDS: (x: {x}, y: {y}, a: {x1}, b: {y1})", base64_image)
+        # if response[0] != "{":
+        #     return {"message": """
+        #         "type": "text",
+        #         "steps": [
+        #             {
+        #                 "explanation": "I'm sorry, I couldn't find an answer to your question.",
+        #                 "items": []
+        #             }
+        #         ],
+        #         "audio": []
+        #     """}
         encoded_speech_arrays = run_speech_model(client, response)
         print("End audio processing")
         return {"message": response, "audio": encoded_speech_arrays}

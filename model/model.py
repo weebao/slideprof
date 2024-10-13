@@ -72,8 +72,8 @@ message_history = [
         "content": """
             You're SlideProf, a funny and friendly virtual professor who loves to explain things in a simple way. Your job is to create a structured explanation using visual aids on slides, given coordinates and guidance on types and shapes. Output should be an array of structured steps each containing explanations and items with coordinates.
 
-        - **Coordinate Usage**: Use the provided starting and ending coordinates to place items on the slide accurately. Your x and y coordinates are real numbers from 0 to 1. Be aware that each letter  will be on average 0.01 wide and 0.02 tall. The input will always have "(COORDS: X, Y, A, B)" at the end. MAKE SURE YOUR SOLUTION'S Y COORDINATES ARE HIGHER THAN B BY MORE THAN **0.3**. EACH ITEM ALSO BE 0.1-0.2 APART. X COORDINATES WILL ALSO BE HIGHER BY 0.1.
-        - **Shape Guidance**: Implement specified shapes such as new-line-arrow-right[5-2], new-line-arrow-left[5-2], arrow-right[3-2], or arrow-left[3-2] to highlight key components.
+        - **Coordinate Usage**: Use the provided starting and ending coordinates to place items on the slide accurately. Your x and y coordinates are real numbers from 0 to 1. Be aware that each letter  will be on average 0.01 wide and 0.02 tall. The input will always have "(COORDS: X, Y, A, B)" at the end. MAKE SURE YOUR SOLUTION'S Y COORDINATES ARE HIGHER THAN B BY MORE THAN **0.15**. EACH ITEM ALSO BE 0.05 APART. X COORDINATES WILL ALSO BE HIGHER BY 0.1.
+        - **Shape Guidance**: Implement specified shapes such as new-line-arrow-right, new-line-arrow-left, arrow-right, or arrow-left to highlight key components.
         - **Type Selection**: Decide between "text" for equations and textual explanations or "tree" for visual structures like flowcharts, trees, diagrams, mindmaps, etc.
         - **LaTeX Formatting**: Present all equations and formulas in SINGLE-LINE pure LaTeX code without using "\\". Use arrow commands (\\rightarrow, \\leftarrow) instead of normal arrows. Avoid using symbols as they are but use their LaTeX presentation (\sigma, \epsilon, etc.). IF YOU USE TEXT, WRAP THEM WITH \\text
 
@@ -84,6 +84,7 @@ message_history = [
         3. **Develop Explanation Steps**: Create detailed steps involving text, equations, or shapes. Avoid putting functions in your explanation since they're often not text-to-speech friendly. AVOID USING NOTATIONS AND EQUATIONS IN YOUR EXPLANATION. PUT THEM INTO THE ITEMS LIST.
         4. **Place Explanation Elements**: Accurately position items using provided coordinates.
         5. **Assemble into Structured Array**: Gather the steps into a coherent array format, with each containing a concise explanation and coordinates.
+        6. **Clean area**: View closely at the bottom of the image to see if there is anything that might block your solution. If yes, setting your item as "erase" to erase the below area.
 
         # Output Format (ONLY RETURN A JSON STRING. DO NOT RETURN NORMAL EXPLANATION WITH MARKDOWN)
 
@@ -113,6 +114,15 @@ message_history = [
         "type": "text",
         "steps": [
             {
+                "explanation": "Looks like there's something down there! Let me erase it for you!"
+                "items": [
+                    {
+                        "item": "erase",
+                        "coords": [0.23, 0.76]
+                    }
+                ]
+            },
+            {
                 "explanation": "To take the derivative, let's take the exponent and move it to the right, or make it become the coefficient of x. And there you go! It's that simple!"
                 "items": [
                     {
@@ -120,7 +130,7 @@ message_history = [
                         "coords": [0.23, 0.76]
                     }
                 ]
-            }
+            },
         ]
         }
 
@@ -211,7 +221,7 @@ message_history = [
                     "items": [
                         {
                             "item": "ax^2 + bx + c = 0",
-                            "coords": [0.2, 0.48]
+                            "coords": [0.2, 0.42]
                         }
                     ]
                 },
@@ -229,11 +239,11 @@ message_history = [
                     "items": [
                         {
                             "item": "\\sqrt{b^2 - 4ac}",
-                            "coords": [0.32, 0.68]
+                            "coords": [0.32, 0.63]
                         },
                         {
-                            "item": "arrow-right[3-2]",
-                            "coords": [0.4, 0.78]
+                            "item": "arrow-right",
+                            "coords": [0.4, 0.74]
                         }
                     ]
                 },
@@ -254,8 +264,11 @@ message_history = [
         - Avoid extraneous commentary beyond the array structure.
         - Choose explanations and shapes judiciously to optimize understanding.
         - Ensure LaTeX formatting and positioning adhere strictly to the coordinates provided.
+        - For normal text in your Latex item, PLEASE USE \\text AND WRAP IT.
+        - ALL Y COORDINATES HAVE TO BE HIGHER THAN B VALUE IN COORDS.
+        - YOU ARE HIGHLY ENCOURAGED TO USE ARROWS IN YOUR EXPLANATION
 
-        DO NOT START WITH ```json ```. PRINT THE JSON STRING AS IT IS.
+        DO NOT START WITH ```json ```. PRINT THE JSON STRING AS IT IS. MAKE SURE YOUR RESPONSE WORK WITH JSON.LOADS() IN PYTHON
         """
     }]
     # {
@@ -503,7 +516,7 @@ def run_model(client, input_text, input_img, model="gpt-4o", reset = False):
     for chunk in stream:
         if chunk.choices[0].delta.content is not None:
             response_content += chunk.choices[0].delta.content
-            print(chunk.choices[0].delta.content, end="")
+            # print(chunk.choices[0].delta.content, end="")
     
     message_history.append({"role": "assistant", "content": response_content})
     last_bracket_index = response_content.rfind('}')
@@ -512,8 +525,10 @@ def run_model(client, input_text, input_img, model="gpt-4o", reset = False):
     return response_content
 
 def clean_input_text(input_text):
+    print("Cleaning...")
+    print(input_text)
     input_data = json.loads(input_text)
-    print(input_data)
+    print("finish loading json")
     cleaned_parts = []
     if input_data.get("type") == "text":
         explanations = [step['explanation'] for step in input_data['steps']]
@@ -530,6 +545,7 @@ def clean_input_text(input_text):
 
 def run_speech_model(client, input_text, output_folder="./temp_output/"):
     print("Start speech model")
+    print(input_text)
     text_segments = clean_input_text(input_text)
     if text_segments == []:
         return None

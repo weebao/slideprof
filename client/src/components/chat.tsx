@@ -3,6 +3,8 @@ import { Send, Mic, MessageCircle, Minus, SquareDashedMousePointer } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { syncFuncWithMessages } from "@/utils/format";
+import { isDragActive } from "framer-motion";
+import { AnyMapping } from "three";
 
 interface Message {
   text: string;
@@ -11,16 +13,16 @@ interface Message {
 }
 
 interface ChatProps {
-  toggleFunction: () => void;
+  isDragboxActive: any,
+  setIsDragboxActive: any,
   chatMutation: any;
 }
 
-export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
+export const Chat: React.FC<ChatProps> = ({ isDragboxActive, setIsDragboxActive, chatMutation }) => {
   const [messages, setMessages] = useState<Message[]>([
     { text: "Hey, SlideProf here! Please select which part you find difficult and I will help you!", isUser: false, timestamp: new Date() },
   ]);
   const [inputText, setInputText] = useState("");
-  const [isDragboxActive, setIsDragboxActive] = useState(false); // Added state for dragbox
 
   const [isChatOpen, setIsChatOpen] = useState(false); // Control chat box visibility
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -97,7 +99,7 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
               <img
                 src="/imgs/logo.png" // Your logo file path
                 alt="AI Logo"
-                className={`w-12 h-auto ${chatMutation.isPending ? "glow" : ""}`} // Add glow when AI is thinking
+                className={`w-12 h-auto ${chatMutation.isPending ? "animate-spin" : ""}`} // Add glow when AI is thinking
               />
               <span className="ml-2 text-gray-700 font-semibold">SlideProf</span>
             </div>
@@ -142,7 +144,6 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
                 variant={isDragboxActive ? "default" : "outline"}
                 onClick={() => {
                   setIsDragboxActive(!isDragboxActive);
-                  toggleFunction();
                 }}
               >
                 <SquareDashedMousePointer className="h-4 w-4" />
