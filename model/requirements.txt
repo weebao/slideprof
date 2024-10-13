@@ -13,3 +13,6 @@ transformers==4.43.3
 uvicorn==0.30.1
 pymupdf
 gradio_client
+moviepy
+opencv-python
+tqdm
