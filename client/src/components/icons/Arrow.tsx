@@ -1,8 +1,8 @@
 import React from 'react';
 
-export const Arrow: React.FC<{ className?: string }> = ({ className }) => {
+export const Arrow: React.FC<{ className?: string, style?: any }> = ({ className, style }) => {
   return (
-    <svg width="209" height="144" viewBox="0 0 209 144" className={className} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg width="209" height="144" viewBox="0 0 209 144" className={className} style={style} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M10.4375 70.2929C66.2705 69.2196 121.895 67.8388 177.728 66.7655C189.782 66.6672 188.289 47.9281 176.444 48.3337C120.611 49.4071 64.9869 50.7878 9.15392 51.8611C-2.89967 51.9594 -1.61609 70.3911 10.4375 70.2929Z"
         fill="currentColor"

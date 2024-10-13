@@ -14,7 +14,6 @@ interface TreeGraphProps {
 
 const TreeGraph: React.FC<TreeGraphProps> = ({ data, x, y }) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
-  const tree: TreeNode = data.result[0].tree;
 
   useEffect(() => {
     if (!d3Container.current) return;
@@ -22,10 +21,11 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ data, x, y }) => {
     const svg = d3.select(d3Container.current),
       width = +svg.attr("width"),
       height = +svg.attr("height"),
-      g = svg.append("g").attr("transform", `translate(${x},${y})`);
+      g = svg.append("g").attr("transform", `translate(${x*0.2},${y})`);
 
-    const treeLayout = d3.tree<TreeNode>().size([height, width - 160]);
-    const root = d3.hierarchy<TreeNode>(tree);
+      const treeLayout = d3.tree<TreeNode>().size([height / 2, width / 3]);
+
+    const root = d3.hierarchy<TreeNode>(data);
     treeLayout(root);
 
     const link = g

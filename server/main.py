@@ -4,6 +4,7 @@ import json
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware 
+from utils import parse_message_fallback
 load_dotenv()
 
 app = FastAPI()
@@ -63,7 +64,11 @@ async def ask_question(request: Request):
             raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Error processing PDF"))
         
         data = response.json()
-        data["message"] = json.loads(data["message"])
+        print("got to server")
+        try:
+            data["message"] = json.loads(data["message"])
+        except:
+            data["message"] = parse_message_fallback(data["message"])
         return data
 
     except requests.exceptions.RequestException as e:

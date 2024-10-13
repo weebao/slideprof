@@ -11,6 +11,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import TreeGraph from './tree';
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { DragBox } from "./dragbox";
+import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 const resizeObserverOptions = {};
@@ -31,6 +32,7 @@ interface SlidesProps {
 }
 
 const Slides: React.FC<SlidesProps> = ({ file, isDragboxActive, setSelectedPage, setDragboxCoords, setSlideCoords }) => {
+  const { isTouchDevice } = useIsTouchDevice();
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -156,7 +158,7 @@ const Slides: React.FC<SlidesProps> = ({ file, isDragboxActive, setSelectedPage,
                   className="w-full h-full"
                   options={options}
                 >
-                  <Carousel setApi={setCarouselApi} opts={{ watchDrag: false }}>
+                  <Carousel setApi={setCarouselApi} opts={{ watchDrag: isTouchDevice && !isDragboxActive }}>
                     <CarouselContent>
                       {Array.from(new Array(numPages), (_el, index) => (
                         <CarouselItem key={index}>
@@ -211,7 +213,7 @@ const Slides: React.FC<SlidesProps> = ({ file, isDragboxActive, setSelectedPage,
       ) : (
         <div className="w-full h-[calc(100dvh-200px)] flex flex-col items-center justify-center">
           <Frown className="w-12 h-12 mb-2" />
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-center text-gray-600">
             No file uploaded. Please upload a PDF file{" "}
             <Link href="/">
               <span className="text-primary underline">here</span>

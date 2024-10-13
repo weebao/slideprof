@@ -11,13 +11,29 @@ import { LatexText } from "@/components/latex";
 import { sync } from "framer-motion";
 import { Arrow, SmallNextLineArrow, BigNextLineArrow } from "@/components/icons";
 const SlidesComponent = dynamic(() => import("../components/slides.js"), { ssr: false });
-
 const arrowList: any = {
-  "arrow-right": () => <Arrow />,
-  "arrow-left": () => <Arrow className="transform rotate-180" />,
-  "next-line-arrow-right": () => <SmallNextLineArrow />,
-  "next-line-arrow-left": () => <SmallNextLineArrow className="transform rotate-180" />,
-}
+  "arrow-right": (x: number, y: number) => <Arrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute w-8 h-8" />,
+  "arrow-left": (x: number, y: number) => <Arrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute transform rotate-180 w-8 h-8" />,
+  "new-line-arrow-right": (x: number, y: number) => <BigNextLineArrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute w-8 h-8" />,
+  "new-line-arrow-left": (x: number, y: number) => (
+    <BigNextLineArrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute transform rotate-180 w-8 h-8" />
+  ),
+};
+
+// if (data.message.type === "text") {
+//   syncFuncWithMessages(
+//     data.message.steps.map((step: any) => step.explanation),
+//     (x: any, i: number) => {
+//       const step = data.message.steps[i];
+//       syncFuncWithMessages(
+//         step.items.map((item: any) => item.item),
+//         (x: any, i: number) => {
+//           setLatexList((prev: any) => [...prev, [x, step.items[i].coords]]);
+//         }
+//       );
+//     }
+//   );
+// }
 
 const Slides: NextPage = () => {
   const { file } = useFile();
@@ -43,7 +59,7 @@ const Slides: NextPage = () => {
           (x: any, i: number) => {
             const step = data.message.steps[i];
             syncFuncWithMessages(
-              step.items.map((item: any) => item.item),
+              step.items.map((item: any) => item.item + "     "),
               (x: any, i: number) => {
                 setLatexList((prev: any) => [...prev, [x, step.items[i].coords]]);
               }
@@ -54,7 +70,7 @@ const Slides: NextPage = () => {
         syncFuncWithMessages(
           data.message.steps.map((step: any) => step.explanation),
           (x: any, i: number) => {
-            setTreeData([data, data.message.coords]);
+            setTreeData([data.message.steps[i].tree, data.message.steps[i].coords]);
           }
         );
       }
@@ -68,7 +84,7 @@ const Slides: NextPage = () => {
   }, [selectedPage]);
 
   return (
-    <div className="h-[calc(100dvh-200px)] flex">
+    <div className="h-full flex">
       <SlidesComponent
         file={file}
         isDragboxActive={isDragboxActive}
@@ -81,23 +97,27 @@ const Slides: NextPage = () => {
       </div>
       {latexList && latexList.length !== 0
         ? latexList.map((latex: any, i: number) => {
-          if (latex[0] === "erase") {
-            return (
-              <div key={i} className="absolute bg-white w-lg h-lg"></div>
-            )
-          } else if (arrowList[latex[0]]) {
-            return (
-              <div key={i} className="absolute">
-                {arrowList[latex[0]]()}
-              </div>
-            )
-          } else {
-            return (<LatexText text={latex[0]} x={latex[1][0] * slideCoords[2] + slideCoords[0]} y={latex[1][1] * slideCoords[3] + slideCoords[1]} />);
-          }
-        })
+            const name = latex[0].trim();
+            console.log(latex[0].trim(), name === "erase", name in arrowList);
+            const x = Math.round(latex[1][0] * slideCoords[2] + slideCoords[0]);
+            const y = Math.round(latex[1][1] * slideCoords[3] + slideCoords[1]);
+            if (name === "erase") {
+              return <div key={i} style={{ left: `${x}px`, top: `${y}px` }} className="absolute bg-white w-[700px] h-60" />;
+            } else if (arrowList[name]) {
+              return arrowList[name](x, y);
+            } else {
+              return <LatexText key={i} text={latex[0]} x={x} y={y} />;
+            }
+          })
         : null}
       {treeData ? (
-        <TreeGraph data={treeData[0]} x={treeData[1][0] * slideCoords[2] + slideCoords[0]} y={treeData[1][1] * slideCoords[3] + slideCoords[1]} />
+        <div className="absolute" style={{ left: `${slideCoords[0]}px`, top: `${slideCoords[1]}px` }}>
+          <TreeGraph
+            data={treeData[0]}
+            x={Math.round(treeData[1][0] * slideCoords[2] + slideCoords[0])}
+            y={Math.round(treeData[1][1] * slideCoords[3] + slideCoords[1])}
+          />
+        </div>
       ) : null}
     </div>
   );
