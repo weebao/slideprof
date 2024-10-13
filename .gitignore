@@ -113,3 +113,5 @@ node_modules
 */.DS_Store
 
 model/uploaded_pdfs
+model/test_input
+model/temp_output
