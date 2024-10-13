@@ -69,7 +69,7 @@ def encode_image(pil_image):
 system_prompt = [
     {
         "role": "system",
-        "content": """You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. 
+        "content": """"You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure single line LATEX, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry." 
         """
     },
     {
@@ -178,14 +178,14 @@ system_prompt = [
 message_history = [
     {
         "role": "system",
-        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry."
+        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[5-2], new-line-arrow-left[5-2], arrow-right[3-2], arrow-left[3-2]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure single line LATEX, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. Never use \\ in your text. Every equation, formula or set must be written in LATEX."
     },
     {
         "role": "user",
         "content": [
             {
                 "type": "text",
-                "text": "Solve the system of equations"
+                "text": "Solve the system of equations (COORDS: 0.23, 0.30, 0.28, 0.32)"
             },
             # {
             #     "type": "image_url",
@@ -201,29 +201,29 @@ message_history = [
             "type": "text",
             "result": [
                 {
-                    "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
-                    "steps": [
-                        {
-                            "item": "Solve the first equation for y: y = 5 - x",
-                            "coords": [100, 100]
-                        },
-                        {
-                            "item": "Substitute into the second equation: 2x - (5 - x) = 3",
-                            "coords": [200, 200]
-                        },
-                        {
-                            "item": "Simplify: 3x = 8, so x = 8/3",
-                            "coords": [300, 300]
-                        },
-                        {
-                            "item": "Substitute x into the equation for y: y = 5 - 8/3 = 7/3",
-                            "coords": [400, 400]
-                        },
-                        {
-                            "item": "The solution is: x = 8/3 and y = 7/3",
-                            "coords": [500, 500]
-                        }
-                    ]
+                    "explanation": "Let's solve this system of equations! We have \(x + y = 5\) and \(2x - y = 3\). Let's solve for \(y\) first!",
+                    "item": "y = 5 - x",
+                    "coords": [0.23, 0.34]
+                },
+                {
+                    "explanation": "Now, let's substitute this into the second equation and solve for \(x\).",
+                    "item": "new-line-arrow-right[5-2] *SEP* 2x - (5 - x) = 3",
+                    "coords": [0.28, 0.35]
+                },
+                {
+                    "explanation": "Simplify the equation to find \(x\).",
+                    "item": "new-line-arrow-right[5-2] *SEP* 3x = 8, x = \\frac{8}{3}",
+                    "coords": [0.32, 0.39]
+                },
+                {
+                    "explanation": "Now, substitute \(x\) back into the equation to find \(y\).",
+                    "item": "new-line-arrow-right[5-2] *SEP* y = 5 - \\frac{8}{3}, y = \\frac{7}{3}",
+                    "coords": [0.35, 0.42]
+                },
+                {
+                    "explanation": "And there you got your lovely solution!",
+                    "item": "new-line-arrow-right[5-2] *SEP* x = \\frac{8}{3}, y = \\frac{7}{3}",
+                    "coords": [0.38, 0.45]
                 }
             ]
         }"""
@@ -233,7 +233,7 @@ message_history = [
         "content": [
             {
                 "type": "text",
-                "text": "Please explain the following data structure concepts"
+                "text": "Please explain the following data structure concepts (COORDS: 0.23, 0.30, 0.28, 0.32)"
             },
             # {
             #     "type": "image_url",
@@ -250,6 +250,7 @@ message_history = [
             result: [
                 {
                     explanation: "This is the first step of the explanation",
+                    coordinates: [0.23, 0.34],
                     tree: {
                         name: "x = 2",
                         children: [
@@ -320,27 +321,19 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini", reset = False)
 
 def clean_input_text(input_text):
     input_data = json.loads(input_text)
+    print(input_data)
     cleaned_parts = []
     if input_data.get("type") == "text":
-        for result_item in input_data.get("result", []):
-            explanation = result_item.get("explanation", "")
-            if explanation:
-                cleaned_parts.append({"type": "explanation", "text": explanation})
-                
-                print(cleaned_parts)
-            for step in result_item.get("steps", []):
-                item_text = step.get("item", "")
-                if item_text:
-                    cleaned_parts.append({"type": "step", "text": "[pause] " + item_text})
-                    # cleaned_parts.append(item_text)
+        explanations = [step['explanation'] for step in input_data['result']]
+        for explanation in explanations:
+            cleaned_parts.append({"type": "explanation", "text": explanation})
 
     elif input_data.get("type") == "tree":
         for result_item in input_data.get("result", []):
             explanation = result_item.get("explanation", "")
             if explanation:
                 cleaned_parts.append({"type": "explanation", "text": explanation})
-                # cleaned_parts.append(explanation)
-                
+    print(cleaned_parts)
     return cleaned_parts
 
 def run_speech_model(client, input_text, output_folder="./temp_output/"):
