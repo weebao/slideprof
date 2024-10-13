@@ -23,6 +23,7 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
   const [isDragboxActive, setIsDragboxActive] = useState(false); // Added state for dragbox
 
   const [isChatOpen, setIsChatOpen] = useState(false); // Control chat box visibility
+  const [isSpeaking, setIsSpeaking] = useState(false); // State for handling glow
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatBoxRef = useRef<HTMLDivElement>(null); // Ref for detecting outside clicks
@@ -62,7 +63,13 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
         ]);
         if (audio && audio[i]) {
           const audioElement = new Audio(`data:audio/wav;base64,${audio[i]}`);
+
+          setIsSpeaking(true);
           audioElement.play();
+
+          audioElement.onended = () => {
+            setIsSpeaking(false);
+          }
         }
       });
     }
@@ -95,9 +102,15 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
             {/* Display the logo at the top of the chat */}
             <div className="flex items-center">
               <img
-                src="/imgs/logo.png" // Your logo file path
+                src="/imgs/logo.png"
                 alt="AI Logo"
-                className={`w-12 h-auto ${chatMutation.isPending ? "glow" : ""}`} // Add glow when AI is thinking
+                className={`w-12 h-auto ${
+                  chatMutation.isPending
+                  ? "animate-spin"
+                  : isSpeaking
+                  ? "animate-pulse"
+                  : ""
+                }`}
               />
               <span className="ml-2 text-gray-700 font-semibold">SlideProf</span>
             </div>
