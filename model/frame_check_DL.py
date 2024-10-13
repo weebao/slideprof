@@ -109,7 +109,7 @@ def match_pages_to_frames(page_embeddings, frame_embeddings, threshold=0.85):
 
     return timestamps
 
-def process_video_and_pages(video_path, pages_folder, interval=2, threshold=0.85):
+def process_video_and_pages(video_path, pages_folder, interval=2, threshold=0.85, output_file='page_frame_timestamps.json'):
     image_paths = [os.path.join(pages_folder, f) for f in os.listdir(pages_folder) if f.endswith(('.jpg', '.png'))]
     
     image_paths = natsort.natsorted(image_paths)
@@ -128,10 +128,10 @@ def process_video_and_pages(video_path, pages_folder, interval=2, threshold=0.85
 
     save_results_to_json(page_paths, timestamps, 'page_frame_timestamps.json')
 
-if __name__ == "__main__":
-    video_path = "/content/drive/MyDrive/HackHarvard/test.mp4"  
-    pages_folder = "/content/drive/MyDrive/HackHarvard/pages"  
-    interval = 1
-    threshold = 0.85  
+# if __name__ == "__main__":
+#     video_path = "/content/drive/MyDrive/HackHarvard/test.mp4"  
+#     pages_folder = "/content/drive/MyDrive/HackHarvard/pages"  
+#     interval = 1
+#     threshold = 0.85  
 
-    process_video_and_pages(video_path, pages_folder, interval, threshold)
+#     process_video_and_pages(video_path, pages_folder, interval, threshold, output_file='page_frame_timestamps.json')

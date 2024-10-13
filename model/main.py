@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 from pathlib import Path
+from all_to_pdf import all_to_pdf_main
 
 app = FastAPI()
 
@@ -26,8 +27,12 @@ app.add_middleware(
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 pdf_storage_path = Path("./uploaded_pdfs")
+video_storage_path = Path("./uploaded_videos")
+output_pdf_path = Path("./generated_pdfs")
 
 pdf_storage_path.mkdir(parents=True, exist_ok=True)
+video_storage_path.mkdir(parents=True, exist_ok=True)
+output_pdf_path.mkdir(parents=True, exist_ok=True)
 
 @app.get("/")
 async def read_root():
@@ -90,3 +95,38 @@ async def process_pdf(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF: {str(e)}")
+    
+@app.post("/video_to_pdf/")
+async def video_to_pdf(
+    pdf_file: UploadFile = File(...),
+    video_file: UploadFile = File(...)
+):
+    try:
+        pdf_file_location = pdf_storage_path / pdf_file.filename
+        video_file_location = video_storage_path / video_file.filename
+
+        with open(pdf_file_location, "wb") as f:
+            shutil.copyfileobj(pdf_file.file, f)
+
+        with open(video_file_location, "wb") as f:
+            shutil.copyfileobj(video_file.file, f)
+
+        final_pdf_output_path = output_pdf_path / "final_output.pdf"
+
+        all_to_pdf_main(
+            client,
+            video_path=str(video_file_location),
+            pdf_path=str(pdf_file_location),
+            final_pdf_path=str(final_pdf_output_path)
+        )
+
+        if not final_pdf_output_path.exists():
+            raise HTTPException(status_code=500, detail="Error generating final PDF file")
+
+        return {
+            "message": "PDF successfully created from video and PDF input",
+            "final_pdf_path": str(final_pdf_output_path)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing: {str(e)}")
