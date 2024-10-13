@@ -66,227 +66,420 @@ def encode_image(pil_image):
 #     ]
 # }
 
-system_prompt = [
-    {
-        "role": "system",
-        "content": """You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. 
-        """
-    },
-    {
-        "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": "Solve the system of equations"
-            },
-            # {
-            #     "type": "image_url",
-            #     "image_url": {
-            #         "url": """data:image/png;base64,  """
-            #     }
-            # }
-        ]
-    },
-    {
-        "role": "assistant",
-        "content": """{
-            "type": "text",
-            "result": [
-                {
-                    "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
-                    "steps": [
-                        {
-                            "item": "Solve the first equation for y: y = 5 - x",
-                            "coords": [100, 100]
-                        },
-                        {
-                            "item": "Substitute into the second equation: 2x - (5 - x) = 3",
-                            "coords": [200, 200]
-                        },
-                        {
-                            "item": "Simplify: 3x = 8, so x = 8/3",
-                            "coords": [300, 300]
-                        },
-                        {
-                            "item": "Substitute x into the equation for y: y = 5 - 8/3 = 7/3",
-                            "coords": [400, 400]
-                        },
-                        {
-                            "item": "The solution is: x = 8/3 and y = 7/3",
-                            "coords": [500, 500]
-                        }
-                    ]
-                }
-            ]
-        }"""
-    }, 
-    {
-        "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": "Please explain the following data structure concepts"
-            },
-            # {
-            #     "type": "image_url",
-            #     "image_url": {
-            #         "url": "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAA..."
-            #     }
-            # }
-        ]
-    }, 
-    {
-        "role": "assistant",
-        "content": """{
-            type: "tree",
-            result: [
-                {
-                    explanation: "This is the first step of the explanation",
-                    tree: {
-                        name: "x = 2",
-                        children: [
-                            {
-                                name: "y = 3",
-                                children: [
-                                    {
-                                        name: "z = 4",
-                                        children: [
-                                            {
-                                                name: "w = 5",
-                                                children: []
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                name: "z = 4",
-                                children: []
-                            },
-                            {
-                                name: "w = 5",
-                                children: []
-                            }
-                        ]
-                    }
-                }
-            ]
-        }"""
-    }    
-]
-
 message_history = [
     {
         "role": "system",
-        "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure latex, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry."
-    },
-    {
-        "role": "user",
-        "content": [
+        "content": """
+            You're SlideProf, a funny and friendly virtual professor who loves to explain things in a simple way. Your job is to create a structured explanation using visual aids on slides, given coordinates and guidance on types and shapes. Output should be an array of structured steps each containing explanations and items with coordinates.
+
+        - **Coordinate Usage**: Use the provided starting and ending coordinates to place items on the slide accurately. Your x and y coordinates are real numbers from 0 to 1. Be aware that each letter  will be on average 0.01 wide and 0.02 tall. The input will always have "(COORDS: X, Y, A, B)" at the end. MAKE SURE YOUR SOLUTION'S Y COORDINATES ARE HIGHER THAN B BY MORE THAN **0.3**. EACH ITEM ALSO BE 0.1-0.2 APART. X COORDINATES WILL ALSO BE HIGHER BY 0.1.
+        - **Shape Guidance**: Implement specified shapes such as new-line-arrow-right[5-2], new-line-arrow-left[5-2], arrow-right[3-2], or arrow-left[3-2] to highlight key components.
+        - **Type Selection**: Decide between "text" for equations and textual explanations or "tree" for visual structures like flowcharts, trees, diagrams, mindmaps, etc.
+        - **LaTeX Formatting**: Present all equations and formulas in SINGLE-LINE pure LaTeX code without using "\\". Use arrow commands (\\rightarrow, \\leftarrow) instead of normal arrows. Avoid using symbols as they are but use their LaTeX presentation (\sigma, \epsilon, etc.). IF YOU USE TEXT, WRAP THEM WITH \\text
+
+        # Steps
+
+        1. **Interpret the Question**: Analyze the question, including the specified coordinates and type or shape preferences.
+        2. **Determine Explanation Format**: Select "text" or "tree" based on the question's nature.
+        3. **Develop Explanation Steps**: Create detailed steps involving text, equations, or shapes. Avoid putting functions in your explanation since they're often not text-to-speech friendly. AVOID USING NOTATIONS AND EQUATIONS IN YOUR EXPLANATION. PUT THEM INTO THE ITEMS LIST.
+        4. **Place Explanation Elements**: Accurately position items using provided coordinates.
+        5. **Assemble into Structured Array**: Gather the steps into a coherent array format, with each containing a concise explanation and coordinates.
+
+        # Output Format (ONLY RETURN A JSON STRING. DO NOT RETURN NORMAL EXPLANATION WITH MARKDOWN)
+
+        json
+        {
+        "type": "text" | "tree",
+        "steps": [
             {
-                "type": "text",
-                "text": "Solve the system of equations"
+                "explanation": "[brief text explanation]",
+                "items": [
+                    {
+                        "item": "[equation in LaTeX or text]",
+                        "coords": [x, y]
+                    }
+                ]
             },
-            # {
-            #     "type": "image_url",
-            #     "image_url": {
-            #         "url": """data:image/png;base64,  """
-            #     }
-            # }
+            // Additional steps if necessary
         ]
-    },
-    {
-        "role": "assistant",
-        "content": """{
-            "type": "text",
-            "result": [
-                {
-                    "steps": [
-                        {
-                    "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
-                            "equation": "y = 5 - x",
-                            "coords": [100, 100]
-                        },
-                        {
-                            "item": "Substitute into the second equation: 2x - (5 - x) = 3",
-                            "coords": [200, 200]
-                        },
-                        {
-                            "item": "Simplify: 3x = 8, so x = 8/3",
-                            "coords": [300, 300]
-                        },
-                        {
-                            "item": "Substitute x into the equation for y: y = 5 - 8/3 = 7/3",
-                            "coords": [400, 400]
-                        },
-                        {
-                            "item": "The solution is: x = 8/3 and y = 7/3",
-                            "coords": [500, 500]
-                        }
-                    ]
-                }
-            ]
-        }"""
-    }, 
-    {
-        "role": "user",
-        "content": [
+        }
+
+
+        # Examples (PLEASE FOLLOW THIS FORMAT AS STRICTLY AS POSSIBLE)
+
+        **Example 1: Equation Explanation  (x: 0.11, y: 0.11, a: 0.45, b: 0.63)**
+        json
+        {
+        "type": "text",
+        "steps": [
             {
-                "type": "text",
-                "text": "Please explain the following data structure concepts"
-            },
-            # {
-            #     "type": "image_url",
-            #     "image_url": {
-            #         "url": "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAA..."
-            #     }
-            # }
+                "explanation": "To take the derivative, let's take the exponent and move it to the right, or make it become the coefficient of x. And there you go! It's that simple!"
+                "items": [
+                    {
+                        "item": "f'(x) = 2x",
+                        "coords": [0.23, 0.76]
+                    }
+                ]
+            }
         ]
-    }, 
-    {
-        "role": "assistant",
-        "content": """{
-            type: "tree",
-            result: [
+        }
+
+
+        **Example 2: Tree Explanation With Mind Map (x: 0.23, y: 0.11, a: 0.88, b: 0.56)**
+        {
+            "type": "tree",
+            "steps": [
                 {
-                    explanation: "This is the first step of the explanation",
-                    tree: {
-                        name: "x = 2",
-                        children: [
+                    "explanation": "Start with the main topic and branch out to explain each step in a structured way.",
+                    "coords": [0.33, 0.66]
+                    "tree": {
+                        "name": "Algorithm Overview",
+                        "children": [
                             {
-                                name: "y = 3",
-                                children: [
+                                "name": "Step 1: Initialization",
+                                "children": [
                                     {
-                                        name: "z = 4",
-                                        children: [
+                                        "name": "Variable Setup",
+                                        "children": []
+                                    },
+                                    {
+                                        "name": "Resource Allocation",
+                                        "children": []
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Step 2: Processing",
+                                "children": [
+                                    {
+                                        "name": "Data Validation",
+                                        "children": []
+                                    },
+                                    {
+                                        "name": "Computation",
+                                        "children": [
                                             {
-                                                name: "w = 5",
-                                                children: []
+                                                "name": "Math Operations",
+                                                "children": []
+                                            },
+                                            {
+                                                "name": "Logical Operations",
+                                                "children": []
                                             }
                                         ]
                                     }
                                 ]
                             },
                             {
-                                name: "z = 4",
-                                children: []
+                                "name": "Step 3: Output",
+                                "children": [
+                                    {
+                                        "name": "Result Formatting",
+                                        "children": []
+                                    },
+                                    {
+                                        "name": "Error Handling",
+                                        "children": []
+                                    }
+                                ]
                             },
                             {
-                                name: "w = 5",
-                                children: []
+                                "name": "Final Review",
+                                "children": [
+                                    {
+                                        "name": "Result Validation",
+                                        "children": []
+                                    },
+                                    {
+                                        "name": "Logging",
+                                        "children": []
+                                    }
+                                ]
                             }
                         ]
                     }
                 }
             ]
-        }"""
-    }    
-]
+        }
 
-def run_model(client, input_text, input_img, model="gpt-4o-mini", reset = False):
+        **Example 3: More LaTeX intensive answer with COORDS: (x: 0.1, y: 0.12, a: 0.56, b: 0.38)**
+        {
+            "type": "text",
+            "steps": [
+                {
+                    "explanation": "Let's solve a quadratic equation using the formula. First, we set it up:",
+                    "items": [
+                        {
+                            "item": "ax^2 + bx + c = 0",
+                            "coords": [0.2, 0.48]
+                        }
+                    ]
+                },
+                {
+                    "explanation": "Now we apply the quadratic formula:",
+                    "items": [
+                        {
+                            "item": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+                            "coords": [0.2, 0.58]
+                        }
+                    ]
+                },
+                {
+                    "explanation": "Let's highlight the discriminant part, which determines the nature of roots.",
+                    "items": [
+                        {
+                            "item": "\\sqrt{b^2 - 4ac}",
+                            "coords": [0.32, 0.68]
+                        },
+                        {
+                            "item": "arrow-right[3-2]",
+                            "coords": [0.4, 0.78]
+                        }
+                    ]
+                },
+                {
+                    "explanation": "After simplifying, you will find the roots depending on the discriminant's value.",
+                    "items": [
+                        {
+                            "item": "x_1, x_2 = \\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}",
+                            "coords": [0.52, 0.78]
+                        }
+                    ]
+                }
+            ]
+            }
+
+        # Notes
+
+        - Avoid extraneous commentary beyond the array structure.
+        - Choose explanations and shapes judiciously to optimize understanding.
+        - Ensure LaTeX formatting and positioning adhere strictly to the coordinates provided.
+
+        DO NOT START WITH ```json ```. PRINT THE JSON STRING AS IT IS.
+        """
+    }]
+    # {
+    #     "role": "system",
+    #     "content": """"You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[50-20], new-line-arrow-left[50-20], arrow-right[30-20], arrow-left[30-20]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure single line LATEX, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry." 
+    #     """
+    # },
+    # {
+    #     "role": "user",
+    #     "content": [
+    #         {
+    #             "type": "text",
+    #             "text": "Solve the system of equations"
+    #         },
+    #         # {
+    #         #     "type": "image_url",
+    #         #     "image_url": {
+    #         #         "url": """data:image/png;base64,  """
+    #         #     }
+    #         # }
+    #     ]
+    # },
+    # {
+    #     "role": "assistant",
+    #     "content": """{
+    #         "type": "text",
+    #         "steps": [
+    #             {
+    #                 "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
+    #                 "steps": [
+    #                     {
+    #                         "item": "Solve the first equation for y: y = 5 - x",
+    #                         "coords": [100, 100]
+    #                     },
+    #                     {
+    #                         "item": "Substitute into the second equation: 2x - (5 - x) = 3",
+    #                         "coords": [200, 200]
+    #                     },
+    #                     {
+    #                         "item": "Simplify: 3x = 8, so x = 8/3",
+    #                         "coords": [300, 300]
+    #                     },
+    #                     {
+    #                         "item": "Substitute x into the equation for y: y = 5 - 8/3 = 7/3",
+    #                         "coords": [400, 400]
+    #                     },
+    #                     {
+    #                         "item": "The solution is: x = 8/3 and y = 7/3",
+    #                         "coords": [500, 500]
+    #                     }
+    #                 ]
+    #             }
+    #         ]
+    #     }"""
+    # }, 
+    # {
+    #     "role": "user",
+    #     "content": [
+    #         {
+    #             "type": "text",
+    #             "text": "Please explain the following data structure concepts"
+    #         },
+    #         # {
+    #         #     "type": "image_url",
+    #         #     "image_url": {
+    #         #         "url": "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+    #         #     }
+    #         # }
+    #     ]
+    # }, 
+    # {
+    #     "role": "assistant",
+    #     "content": """{
+    #         "type": "tree",
+    #         "steps": [
+    #             {
+    #                 explanation: "This is the first step of the explanation",
+    #                 tree: {
+    #                     name: "x = 2",
+    #                     children: [
+    #                         {
+    #                             name: "y = 3",
+    #                             children: [
+    #                                 {
+    #                                     name: "z = 4",
+    #                                     children: [
+    #                                         {
+    #                                             name: "w = 5",
+    #                                             children: []
+    #                                         }
+    #                                     ]
+    #                                 }
+    #                             ]
+    #                         },
+    #                         {
+    #                             name: "z = 4",
+    #                             children: []
+    #                         },
+    #                         {
+    #                             name: "w = 5",
+    #                             children: []
+    #                         }
+    #                     ]
+    #                 }
+    #             }
+    #         ]
+    #     }"""
+    # }    
+# ]
+
+# message_history = [
+#     {
+#         "role": "system",
+#         "content": "You're SlideProf, a virtual professor that answers questions while explaining by drawing directly on the slides. Whenever I ask you a question, I will have with me the coordinates of my selected region (startX, startY, endX, endY) and my . You can also select one of these shapes (new-line-arrow-right[5-2], new-line-arrow-left[5-2], arrow-right[3-2], arrow-left[3-2]) to guide your users to your equation. When answering my equation, please return an array of steps for your explanation, and within the array it should be {explanation, [{ item: (either an equation or text written in pure single line LATEX, or a shape), coords: [x, y]}] for each item. Return just the array, no other explanation. You should choose to answer in type text or type tree. Type text is for math equations or other text related things and type tree is for explanations that have a tree structure, flowchart, data structure, or geometry. Never use \\ in your text. Every equation, formula or set must be written in LATEX."
+#     },
+#     {
+#         "role": "user",
+#         "content": [
+#             {
+#                 "type": "text",
+#                 "text": "Solve the system of equations (COORDS: 0.23, 0.30, 0.28, 0.32)"
+#             },
+#             # {
+#             #     "type": "image_url",
+#             #     "image_url": {
+#             #         "url": """data:image/png;base64,  """
+#             #     }
+#             # }
+#         ]
+#     },
+#     {
+#         "role": "assistant",
+#         "content": """{
+#             "type": "text",
+#             "steps": [
+#                 {
+#                     "explanation": "Let's solve this system of equations! We have \(x + y = 5\) and \(2x - y = 3\). Let's solve for \(y\) first!",
+#                     "item": "y = 5 - x",
+#                     "coords": [0.23, 0.34]
+#                 },
+#                 {
+#                     "explanation": "Now, let's substitute this into the second equation and solve for \(x\).",
+#                     "item": "new-line-arrow-right[5-2] *SEP* 2x - (5 - x) = 3",
+#                     "coords": [0.28, 0.35]
+#                 },
+#                 {
+#                     "explanation": "Simplify the equation to find \(x\).",
+#                     "item": "new-line-arrow-right[5-2] *SEP* 3x = 8, x = \\frac{8}{3}",
+#                     "coords": [0.32, 0.39]
+#                 },
+#                 {
+#                     "explanation": "Now, substitute \(x\) back into the equation to find \(y\).",
+#                     "item": "new-line-arrow-right[5-2] *SEP* y = 5 - \\frac{8}{3}, y = \\frac{7}{3}",
+#                     "coords": [0.35, 0.42]
+#                 },
+#                 {
+#                     "explanation": "And there you got your lovely solution!",
+#                     "item": "new-line-arrow-right[5-2] *SEP* x = \\frac{8}{3}, y = \\frac{7}{3}",
+#                     "coords": [0.38, 0.45]
+#                 }
+#             ]
+#         }"""
+#     }, 
+#     {
+#         "role": "user",
+#         "content": [
+#             {
+#                 "type": "text",
+#                 "text": "Please explain the following data structure concepts (COORDS: 0.23, 0.30, 0.28, 0.32)"
+#             },
+#             # {
+#             #     "type": "image_url",
+#             #     "image_url": {
+#             #         "url": "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+#             #     }
+#             # }
+#         ]
+#     }, 
+#     {
+#         "role": "assistant",
+#         "content": """{
+#             type: "tree",
+#             steps: [
+#                 {
+#                     explanation: "This is the first step of the explanation",
+#                     coordinates: [0.23, 0.34],
+#                     tree: {
+#                         name: "x = 2",
+#                         children: [
+#                             {
+#                                 name: "y = 3",
+#                                 children: [
+#                                     {
+#                                         name: "z = 4",
+#                                         children: [
+#                                             {
+#                                                 name: "w = 5",
+#                                                 children: []
+#                                             }
+#                                         ]
+#                                     }
+#                                 ]
+#                             },
+#                             {
+#                                 name: "z = 4",
+#                                 children: []
+#                             },
+#                             {
+#                                 name: "w = 5",
+#                                 children: []
+#                             }
+#                         ]
+#                     }
+#                 }
+#             ]
+#         }"""
+#     }    
+# ]
+
+def run_model(client, input_text, input_img, model="gpt-4o", reset = False):
     print("IN")
     # if reset:
     #     message_history = system_prompt.copy()
+    print(input_text)
     message_history.append({"role": "user", "content": [
             {
             "type": "text",
@@ -320,31 +513,24 @@ def run_model(client, input_text, input_img, model="gpt-4o-mini", reset = False)
 
 def clean_input_text(input_text):
     input_data = json.loads(input_text)
+    print(input_data)
     cleaned_parts = []
     if input_data.get("type") == "text":
-        for result_item in input_data.get("result", []):
-            explanation = result_item.get("explanation", "")
-            if explanation:
-                cleaned_parts.append({"type": "explanation", "text": explanation})
-
-            for step in result_item.get("steps", []):
-                item_text = step.get("item", "")
-                if item_text:
-                    cleaned_parts.append({"type": "step", "text": "[pause] " + item_text})
+        explanations = [step['explanation'] for step in input_data['steps']]
+        for explanation in explanations:
+            cleaned_parts.append({"type": "explanation", "text": explanation})
 
     elif input_data.get("type") == "tree":
-        for result_item in input_data.get("result", []):
-            explanation = result_item.get("explanation", "")
+        for step in input_data.get("steps", []):
+            explanation = step.get("explanation", "")
             if explanation:
                 cleaned_parts.append({"type": "explanation", "text": explanation})
-                
-    print("Input audio parts:" + cleaned_parts)    
+    print(cleaned_parts)
     return cleaned_parts
 
 def run_speech_model(client, input_text, output_folder="./temp_output/"):
     print("Start speech model")
     text_segments = clean_input_text(input_text)
-    print("The text we need is:" + text_segments)
     if text_segments == []:
         return None
     encoded_audio_array = []
@@ -357,7 +543,7 @@ def run_speech_model(client, input_text, output_folder="./temp_output/"):
 
         response = client.audio.speech.create(
             model="tts-1-hd",
-            voice="nova",
+            voice="echo",
             input=segment["text"],
         )
 

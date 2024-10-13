@@ -62,17 +62,17 @@ async def process_pdf(
             raise HTTPException(status_code=400, detail="Invalid coordinates, must be a list of 4 integers: [x, y, x1, y1]")
         
         x, y, x1, y1 = coordinates_list
+        print(x,y,x1,y1)
         
         print("EXTRACTING")
         img = extract_image_from_pdf(str(pdf_path), page_number, (x, y, x1, y1))
-        img.show()
+        # img.show()
         print("DONE EXTRACTING")
         if img is None:
             raise HTTPException(status_code=400, detail="Could not extract image from PDF")
         
         base64_image = encode_image(img)
-        response = run_model(client, query, base64_image)
-        print("\n \n Response:" + response)
+        response = run_model(client, query + f". COORDS: (x: {x}, y: {y}, a: {x1}, b: {y1})", base64_image)
         encoded_speech_arrays = run_speech_model(client, response)
         print("End audio processing")
         return {"message": response, "audio": encoded_speech_arrays}

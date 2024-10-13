@@ -1,5 +1,6 @@
 import os
 import requests
+import json
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware 
@@ -61,7 +62,10 @@ async def ask_question(request: Request):
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Error processing PDF"))
         
-        return response.json()
+        data = response.json()
+        data["message"] = json.loads(data["message"])
+        return data
+
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:

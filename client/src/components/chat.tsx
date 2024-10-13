@@ -53,12 +53,17 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
 
   useEffect(() => {
     if (chatMutation.isSuccess && chatMutation.data) {
-      const { results } = chatMutation.data.message;
-      syncFuncWithMessages(results.map((step: any) => step.explanation), (x: any) => {
+      const { steps } = chatMutation.data.message;
+      const { audio } = chatMutation.data;
+      syncFuncWithMessages(steps.map((step: any) => step.explanation), (x: any, i) => {
         setMessages((prev) => [
           ...prev,
           { text: x, isUser: false, timestamp: new Date() },
         ]);
+        if (audio && audio[i]) {
+          const audioElement = new Audio(`data:audio/wav;base64,${audio[i]}`);
+          audioElement.play();
+        }
       });
     }
   }, [chatMutation.isSuccess, chatMutation.data]);
