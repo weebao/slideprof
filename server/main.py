@@ -22,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_URL = os.getenv("API_URL", "http://dummyurl.com")
+API_URL = os.getenv("API_URL", "http://maximum-internal-macaque.ngrok-free.app")
 
 @app.get("/")
 async def root():
