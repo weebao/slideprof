@@ -2,7 +2,7 @@ export const ask = async (filename: string, pageNumber: number, question: string
   try {
     console.log(question, imageCoords, filename, pageNumber);
   
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ask`, {
+    const res = await fetch(`${process.env.API_URL}/ask`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
