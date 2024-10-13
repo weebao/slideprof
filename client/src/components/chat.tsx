@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Send, Mic, MessageCircle, Minus, SquareDashedMousePointer } from "lucide-react"; // Added Minus for minimize icon
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { syncFuncWithMessages } from "@/utils/format";
 
 interface Message {
   text: string;
@@ -51,9 +52,14 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
   };
 
   useEffect(() => {
-    if (chatMutation.isSuccess) {
-      const newMessage: Message = { text: chatMutation.data, isUser: false, timestamp: new Date() };
-      setMessages((prev) => [...prev, newMessage]);
+    if (chatMutation.isSuccess && chatMutation.data) {
+      const { results } = chatMutation.data.message;
+      syncFuncWithMessages(results.map((step: any) => step.explanation), (x: any) => {
+        setMessages((prev) => [
+          ...prev,
+          { text: x, isUser: false, timestamp: new Date() },
+        ]);
+      });
     }
   }, [chatMutation.isSuccess, chatMutation.data]);
 
@@ -86,7 +92,7 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
               <img
                 src="/imgs/logo.png" // Your logo file path
                 alt="AI Logo"
-                className={`w-12 h-auto ${isLoading ? "glow" : ""}`} // Add glow when AI is thinking
+                className={`w-12 h-auto ${chatMutation.isPending ? "glow" : ""}`} // Add glow when AI is thinking
               />
               <span className="ml-2 text-gray-700 font-semibold">SlideProf</span>
             </div>
@@ -144,10 +150,6 @@ export const Chat: React.FC<ChatProps> = ({ toggleFunction, chatMutation }) => {
                 onChange={(e) => setInputText(e.target.value)}
                 className="flex-1"
               />
-              <Button type="button" size="icon" variant="outline">
-                <Mic className="h-4 w-4" />
-                <span className="sr-only">Voice input</span>
-              </Button>
               <Button type="submit" size="icon">
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>

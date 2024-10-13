@@ -201,10 +201,10 @@ message_history = [
             "type": "text",
             "result": [
                 {
-                    "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
                     "steps": [
                         {
-                            "item": "Solve the first equation for y: y = 5 - x",
+                    "explanation": "We are solving the system of equations: x + y = 5 and 2x - y = 3",
+                            "equation": "y = 5 - x",
                             "coords": [100, 100]
                         },
                         {

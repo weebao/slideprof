@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useMutation } from "@tanstack/react-query";
 import { ask } from "@/services/questionApi";
 import { useFile } from "@/context/FileContext";
+import { syncFuncWithMessages } from "@/utils/format.js";
 const SlidesComponent = dynamic(() => import("../components/slides.js"), { ssr: false });
 
 const Slides: NextPage = () => {
@@ -13,6 +14,7 @@ const Slides: NextPage = () => {
   const [isDragboxActive, setIsDragboxActive] = useState(false);
   const [dragboxCoords, setDragboxCoords] = useState([0, 0, 0, 0]);
   const [slideCoords, setSlideCoords] = useState([0, 0]);
+  const [latex, setLatex] = useState(["", 0, 0]);
 
   const chatMutation = useMutation({
     mutationFn: (question: string) =>
@@ -22,6 +24,12 @@ const Slides: NextPage = () => {
         question,
         dragboxCoords.map((coord, i) => (coord - slideCoords[i % 2]) / slideCoords[i % 2 + 2])
       ),
+    onSuccess: (data) => {
+      syncFuncWithMessages(data.message.results.map((step: any) => step.explanation), (x: any, i: number) => {
+        const { item, coords } = data.message.results[i];
+        setLatex([item, ...coords]);
+      });
+    }
   });
 
   const toggleDragbox = () => setIsDragboxActive((prev) => !prev);
