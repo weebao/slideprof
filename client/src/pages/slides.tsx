@@ -12,11 +12,11 @@ import { sync } from "framer-motion";
 import { Arrow, SmallNextLineArrow, BigNextLineArrow } from "@/components/icons";
 const SlidesComponent = dynamic(() => import("../components/slides.js"), { ssr: false });
 const arrowList: any = {
-  "arrow-right": (x: number, y: number) => <Arrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute w-8 h-8" />,
-  "arrow-left": (x: number, y: number) => <Arrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute transform rotate-180 w-8 h-8" />,
-  "new-line-arrow-right": (x: number, y: number) => <BigNextLineArrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute w-8 h-8" />,
+  "arrow-right": (x: number, y: number) => <Arrow style={{ left: `${x + 5}px`, top: `${y + 15}px` }} className="absolute w-8 h-8" />,
+  "arrow-left": (x: number, y: number) => <Arrow style={{ left: `${x + 5}px`, top: `${y + 15}px` }} className="absolute transform rotate-180 w-8 h-8" />,
+  "new-line-arrow-right": (x: number, y: number) => <BigNextLineArrow style={{ left: `${x}px`, top: `${y + 5}px` }} className="absolute w-8 h-8" />,
   "new-line-arrow-left": (x: number, y: number) => (
-    <BigNextLineArrow style={{ left: `${x}px`, top: `${y + 2}px` }} className="absolute transform rotate-180 w-8 h-8" />
+    <BigNextLineArrow style={{ left: `${x}px`, top: `${y + 5}px` }} className="absolute transform rotate-180 w-8 h-8" />
   ),
 };
 

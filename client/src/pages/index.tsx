@@ -58,8 +58,7 @@ const Home: NextPage = () => {
           <span className="text-primary"> Visualizations</span>
         </h1>
         <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-          Upload your lecture slides and watch as our AI explains complex concepts while drawing directly on them. Perfect for last-minute exam prep
-          or in-depth study sessions.
+          Say goodbye to poorly annotated slides. Upload your lecture slides and watch as our AI explains complex concepts while drawing directly on them.
         </p>
       </div>
 

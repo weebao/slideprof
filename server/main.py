@@ -45,7 +45,7 @@ async def ask_question(request: Request):
         
         if not filename or not question or page_number is None or not coordinates:
             raise HTTPException(status_code=400, detail="Missing required fields")
-        
+        print("what")
         response = requests.post(f"{API_URL}/process_pdf", data={
             "filename": filename,
             "query": question,

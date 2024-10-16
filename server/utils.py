@@ -2,6 +2,7 @@ import re
 
 def parse_message_fallback(message):
     print("fallback!!")
+    print(message)
     message = message.strip().strip("{}")
     parsed_data = {}
 
