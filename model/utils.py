@@ -204,12 +204,12 @@ def save_frame_from_json(json_file, video_path, output_folder):
     cap.release()
     print(f"All frames saved to {output_folder}")
 
-if __name__ == "__main__":
-    json_file = './test_output/matches/page_frame_timestamps_real.json'  
-    video_path = "./test_input/test.mp4"  
-    output_folder = "./test_output/matches/frames_output"  
+# if __name__ == "__main__":
+#     json_file = './test_output/matches/page_frame_timestamps_real.json'  
+#     video_path = "./test_input/test.mp4"  
+#     output_folder = "./test_output/matches/frames_output"  
 
-    save_frame_from_json(json_file, video_path, output_folder)
+#     save_frame_from_json(json_file, video_path, output_folder)
     
     
     

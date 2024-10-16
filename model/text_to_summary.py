@@ -23,7 +23,7 @@ def encode_image(image_path):
         img.save(img_byte_arr, format='PNG')
         return base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
 
-def generate_summary(text, image_path, model = "gpt-4o"):
+def generate_summary(client, text, image_path, model = "gpt-4o"):
     system_prompt = """
     Generate concise summaries from text that complement or explain the associated visual content. The summaries should be suitable for display in a PowerPoint slide or PDF file.
 
@@ -85,7 +85,7 @@ def generate_summary(text, image_path, model = "gpt-4o"):
 
     return response.choices[0].message.content
 
-def process_json(data, img_folder, token_limit=0):
+def process_json(client, data, img_folder, token_limit=0):
     for page, details in data.items():
         print(f"Processing page {page}")
         text = details.get('text', "")
@@ -94,23 +94,23 @@ def process_json(data, img_folder, token_limit=0):
         img_path = os.path.join(img_folder, f"{page}") 
         
         if token_count > token_limit or os.path.exists(img_path):
-            summary = generate_summary(text, img_path)
+            summary = generate_summary(client, text, img_path)
             data[page]['summary'] = summary
         else:
             data[page]['summary'] = text
         print(f"Summary generated for {page}")
     return data
 
-if __name__ == "__main__":
-    load_dotenv()
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY")
-    )
-    input_file = './test_output/segmented_transcriptions.json'
-    output_file = './test_output/segmented_transcriptions_with_summaries.json'
-    img_folder = './test_input/pages'
+# if __name__ == "__main__":
+    # load_dotenv()
+    # client = OpenAI(
+    #     api_key=os.getenv("OPENAI_API_KEY")
+    # )
+    # input_file = './test_output/segmented_transcriptions.json'
+    # output_file = './test_output/segmented_transcriptions_with_summaries.json'
+    # img_folder = './test_input/pages'
 
-    data = load_json(input_file)
-    processed_data = process_json(data, img_folder)
-    save_json(processed_data, output_file)
-    print(f"Updated file saved at {output_file}")
+    # data = load_json(input_file)
+    # processed_data = process_json(client, data, img_folder)
+    # save_json(processed_data, output_file)
+    # print(f"Updated file saved at {output_file}")
