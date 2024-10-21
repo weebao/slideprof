@@ -14,7 +14,7 @@ import json
 def extract_image_from_pdf(pdf_path, page_number, ratios):
     document = fitz.open(pdf_path)
     
-    page = document.load_page(page_number)
+    page = document.load_page(page_number - 1)
     page_rect = page.rect
     x0 = page_rect.width * ratios[0]
     y0 = page_rect.height * ratios[1]
@@ -25,7 +25,9 @@ def extract_image_from_pdf(pdf_path, page_number, ratios):
     document.close()
     image_data = pix.tobytes("png")
     image = Image.open(io.BytesIO(image_data))
-    
+    output_path = os.path.join("./test_input", f"extracted_image_page_{page_number}.png")
+    image.save(output_path)
+    print(f"Image saved at {output_path}")
     return image  
 
 def mp4_to_voice(mp4_path):

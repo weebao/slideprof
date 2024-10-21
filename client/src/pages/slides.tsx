@@ -50,7 +50,10 @@ const Slides: NextPage = () => {
         file?.name ?? "lecture7.pdf",
         selectedPage,
         question,
-        dragboxCoords.map((coord, i) => (coord - slideCoords[i % 2]) / slideCoords[(i % 2) + 2])
+        dragboxCoords.map((coord, i) => {
+          const normalizedCoord = (coord - slideCoords[i % 2]) / slideCoords[(i % 2) + 2];
+          return Math.max(0, Math.min(1, normalizedCoord)); // Clamp within 0 and 1
+        })
       ),
     onSuccess: (data) => {
       if (data.message.type === "text") {
@@ -78,6 +81,11 @@ const Slides: NextPage = () => {
   });
 
   useEffect(() => {
+    console.log(dragboxCoords)
+    dragboxCoords.forEach((coord, i) => console.log((coord - slideCoords[i % 2]) / slideCoords[(i % 2) + 2]))
+  }, [dragboxCoords])
+
+  useEffect(() => {
     setLatexList([]);
     setTreeData(null);
     setIsDragboxActive(false);
@@ -102,7 +110,7 @@ const Slides: NextPage = () => {
             const x = Math.round(latex[1][0] * slideCoords[2] + slideCoords[0]);
             const y = Math.round(latex[1][1] * slideCoords[3] + slideCoords[1]);
             if (name === "erase") {
-              return <div key={i} style={{ left: `${x}px`, top: `${y}px` }} className="absolute bg-white w-[700px] h-60" />;
+              return <div key={i} style={{ left: `${x}px`, top: `${y + 10}px` }} className="absolute bg-white w-[700px] h-80" />;
             } else if (arrowList[name]) {
               return arrowList[name](x, y);
             } else {
